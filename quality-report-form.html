@@ -555,7 +555,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div class="preview-overlay" id="preview-overlay">
   <div class="preview-toolbar">
     <span id="preview-title-bar">Boka QC Report Preview</span>
-    <button class="btn btn-primary" onclick="const _t=document.title;document.title=getFileName();window.print();setTimeout(()=>document.title=_t,500)" style="padding:6px 14px;font-size:12px">🖨 Print # In</button>
+    <button class="btn btn-primary" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)" style="padding:6px 14px;font-size:12px">🖨 Print # In</button>
     <button class="btn" onclick="closePreview()" style="padding:6px 14px;font-size:12px;background:#555;color:#fff">✕ Close</button>
   </div>
   <div class="preview-pages" id="print-pages"></div>
