@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Boka QC Report</title>
+
+
+<style>
+:root{
+  --beige:#f5f0e8;--brown:#5c4a32;--accent:#c8a96e;
+  --font:'Courier New',Courier,monospace;
+  --red:#c0392b;--blue:#1a5276;--green:#1a7342;
+  --border:#c8b89a;--shadow:rgba(92,74,50,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+em{font-weight:600}
+body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px;overflow-x:hidden;max-width:100vw}
+
+/* ── HEADER BAR ── */
+.app-header{background:var(--brown);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
+.logo{font-size:22px;font-weight:900;color:var(--accent);letter-spacing:2px;font-family:var(--font)}
+.app-header .sub{font-size:10px;color:var(--accent);margin-top:2px}
+
+/* ── TABS ── */
+.tab-bar{background:#4a3828;display:flex;overflow-x:auto;position:sticky;top:46px;z-index:199}
+.tab-btn{padding:10px 20px;color:#b8a898;border:none;background:none;font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.2s}
+.tab-btn:hover{color:#e0d4c0}
+.tab-btn.active{color:#fff;border-bottom-color:var(--accent);background:rgba(255,255,255,.06)}
+
+/* ── PANELS ── */
+.tab-panel{display:none;padding:20px;max-width:1100px;margin:0 auto}
+.tab-panel.active{display:block}
+
+/* ── SECTION CARDS ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px}
+
+/* ── FORM ELEMENTS ── */
+.form-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.form-group label{font-size:11px;color:#7a6050;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{
+  border:1px solid var(--border);border-radius:4px;padding:7px 10px;
+  font-family:inherit;font-size:13px;background:#fdfaf5;
+  color:#2c1a0e;outline:none;transition:.2s
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown);box-shadow:0 0 0 2px rgba(92,74,50,.12)}
+.form-group textarea{resize:vertical;min-height:60px}
+
+/* ── SEVERITY BUTTONS ── */
+.sev-group{display:flex;gap:6px;flex-wrap:wrap}
+.sev-btn{padding:6px 14px;border-radius:20px;border:2px solid transparent;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;opacity:.5;text-transform:uppercase}
+.sev-btn.active{opacity:1;transform:scale(1.05)}
+.sev-btn[data-sev="Critical"]{border-color:#922b21;background:#fdedec;color:#922b21}
+.sev-btn[data-sev="Critical"].active{background:#922b21;color:#fff}
+.sev-btn[data-sev="Major"]{border-color:#e67e22;background:#fef5ec;color:#e67e22}
+.sev-btn[data-sev="Major"].active{background:#e67e22;color:#fff}
+.sev-btn[data-sev="Minor"]{border-color:#d4ac0d;background:#fefde7;color:#b7950b}
+.sev-btn[data-sev="Minor"].active{background:#d4ac0d;color:#fff}
+.sev-btn[data-sev="Observation"]{border-color:#1a5276;background:#eaf2ff;color:#1a5276}
+.sev-btn[data-sev="Observation"].active{background:#1a5276;color:#fff}
+
+/* ── SLIDE ── */
+.slide-wrapper{border:2px solid var(--border);border-radius:8px;margin-bottom:20px;overflow:hidden;max-width:100%;box-sizing:border-box}
+.slide-header{background:var(--brown);color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center}
+.slide-header span{font-size:13px;font-weight:700;letter-spacing:.5px}
+.slide-remove-btn{background:rgba(255,255,255,.18);border:none;color:#fff;padding:3px 10px;border-radius:4px;font-family:inherit;font-size:11px;cursor:pointer}
+.slide-remove-btn:hover{background:rgba(255,255,255,.3)}
+.slide-meta{background:#fdf9f3;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.slide-meta .form-group{min-width:160px}
+.slide-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;box-sizing:border-box;width:100%}
+
+/* ── PHOTO SLOT ── */
+.photo-slot{border:1.5px dashed var(--border);border-radius:6px;display:flex;flex-direction:column;overflow:hidden;background:#fdfaf5;transition:.2s}
+.photo-slot:hover{border-color:var(--brown)}
+.photo-upload-area{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:default;position:relative;overflow:hidden;background:#f7f2eb}
+@media(max-width:500px){.photo-upload-area{aspect-ratio:5/4}.ph-action-btn{width:76px;font-size:9px;padding:4px 6px}.ph-btn-group{gap:4px}}
+.ph-action-row{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.ph-btn-group{display:flex;flex-direction:column;gap:5px;align-items:center}
+.ph-action-btn{border:1.5px solid var(--border);border-radius:5px;background:#fff;color:var(--brown);cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;padding:5px 10px;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.3px;transition:.15s;width:88px;position:relative;overflow:hidden}
+.ph-action-btn:hover{background:var(--beige);border-color:var(--brown);transform:translateY(-1px)}
+.ph-action-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;font-size:0}
+.ph-action-btn svg{opacity:.75}
+#cam-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;flex-direction:column;align-items:center;justify-content:center}
+#cam-wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:min(92vw,520px)}
+#cam-video,#cam-preview{width:100%;max-height:65vh;object-fit:contain;border-radius:10px;background:#111;display:block}
+#cam-canvas{display:none}
+#cam-preview{display:none}
+.cam-ctrl{display:flex;align-items:center;justify-content:center;gap:20px;padding:16px 0 6px}
+.cam-btn{border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;font-size:0;line-height:0}
+.cam-btn-capture{width:62px;height:62px;background:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.25)}
+.cam-btn-capture:hover{transform:scale(1.07);background:#f0f0f0}
+.cam-btn-close{width:44px;height:44px;background:rgba(255,255,255,.15)}
+.cam-btn-close:hover{background:rgba(255,255,255,.28)}
+.cam-btn-confirm{width:54px;height:54px;background:#27ae60}
+.cam-btn-confirm:hover{background:#219a52}
+.cam-btn-retake{width:44px;height:44px;background:rgba(255,255,255,.15)}
+.cam-btn-retake:hover{background:rgba(255,255,255,.28)}
+.cam-label{font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;font-family:inherit;text-align:center}
+.photo-upload-area img{width:100%;height:100%;object-fit:cover}
+.photo-upload-area .ph-icon{font-size:30px;color:#c8b89a;pointer-events:none}
+.photo-upload-input{position:fixed;top:-300px;left:-300px;opacity:0;width:1px;height:1px}
+.photo-meta{padding:8px;display:flex;flex-direction:column;gap:6px}
+.photo-meta select,.photo-meta input[type="text"]{border:1px solid var(--border);border-radius:4px;padding:5px 7px;font-family:inherit;font-size:11px;background:#fdfaf5;width:100%}
+.clear-photo-btn{background:none;border:none;color:#999;font-size:10px;cursor:pointer;text-align:right;padding:0 2px}
+.clear-photo-btn:hover{color:var(--red)}
+
+/* ── ADD SLIDE ── */
+.add-slide-btn{display:block;width:100%;padding:12px;border:2px dashed var(--accent);background:transparent;border-radius:6px;color:var(--brown);font-family:inherit;font-size:13px;cursor:pointer;text-align:center;font-weight:700;letter-spacing:.5px;transition:.2s;margin-bottom:8px}
+.add-slide-btn:hover{background:rgba(200,169,110,.1);border-color:var(--brown)}
+
+/* ── ROOT CAUSE ── */
+.fishbone-container{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:12px;overflow:hidden}
+
+.rc-accordion{display:flex;flex-direction:column;gap:6px}
+.rc-bone{border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.rc-bone-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fdf9f3;cursor:pointer;user-select:none}
+.rc-bone-header:hover{background:#f5ede0}
+.rc-bone-icon{font-size:16px}
+.rc-bone-label{font-weight:700;font-size:12px;text-transform:uppercase;color:var(--brown);flex:1;letter-spacing:.5px}
+.rc-bone-count{font-size:11px;color:var(--accent);font-weight:700;background:rgba(200,169,110,.15);padding:2px 7px;border-radius:10px}
+.rc-bone-chevron{color:#999;transition:.2s;font-size:12px}
+.rc-bone-body{display:none;border-top:1px solid var(--border);padding:8px 12px;background:#fff}
+.rc-bone-body.open{display:block}
+.rc-item{display:flex;flex-direction:column;gap:0;margin-bottom:4px}
+.rc-item-row{display:flex;align-items:flex-start;gap:8px;padding:5px 4px;border-radius:4px;transition:.2s}
+.rc-item-row:hover{background:#fdf4e8}
+.rc-item-check{margin-top:2px;accent-color:var(--brown);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.rc-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1}
+.rc-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
+.rc-item-note{margin-left:26px;margin-top:3px;display:none}
+.rc-item-note.show{display:block}
+.rc-item-note input{width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
+
+/* ── CAPA ── */
+.capa-group-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.6px;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.capa-item{display:flex;flex-direction:column;margin-bottom:4px}
+.capa-item-row{display:flex;align-items:flex-start;gap:8px;padding:5px 4px;border-radius:4px;transition:.2s}
+.capa-item-row:hover{background:#fdf4e8}
+.capa-item-check{margin-top:2px;accent-color:var(--brown);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.capa-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1}
+.capa-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
+.capa-item-note{margin-left:26px;margin-top:3px;display:none}
+.capa-item-note.show{display:block}
+.capa-item-note input{width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
+/* ── CAPA EXPANDED ── */
+.capa-expanded{margin-left:26px;margin-top:4px;display:none;border:1px solid var(--border);border-radius:4px;padding:8px;background:#fdfaf5;flex-direction:column;gap:6px}
+.capa-expanded.show{display:flex}
+/* ── CAPA PHOTO GRID ── */
+.capa-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;margin-top:4px}
+.capa-photo-slot{border:1.5px dashed var(--border);border-radius:5px;overflow:hidden;background:#f7f2eb;display:flex;flex-direction:column}
+.capa-photo-area{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer}
+.capa-photo-area img{width:100%;height:100%;object-fit:cover}
+.capa-photo-area .capa-ph-btns{display:flex;flex-direction:column;gap:4px;align-items:center}
+.capa-photo-caption{border:none;border-top:1px solid var(--border);background:#fff;font-family:inherit;font-size:10px;padding:3px 5px;width:100%;box-sizing:border-box;color:#2c1a0e}
+.capa-photo-caption::placeholder{color:#b0a090}
+.capa-photo-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.5);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
+.capa-exp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.capa-exp-label{font-size:10px;color:#7a6050;font-weight:700;text-transform:uppercase;letter-spacing:.4px;min-width:80px;flex-shrink:0}
+.capa-exp-row input[type="text"]{border:1px solid var(--border);border-radius:4px;padding:4px 7px;font-family:inherit;font-size:11px;background:#fff;flex:1;min-width:80px}
+.capa-date-wrap{display:flex;align-items:center;gap:5px}
+.capa-date-btn{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--brown);background:#fff;position:relative;overflow:hidden;flex:0 0 auto}
+.capa-date-btn:hover{background:var(--beige)}
+.capa-date-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;padding:0;margin:0}
+.capa-date-val{font-size:11px;color:var(--brown);font-weight:600}
+.capa-exp-check{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer}
+.capa-exp-check input{accent-color:var(--brown);width:13px;height:13px;cursor:pointer}
+
+
+/* ── PRINT TOGGLES ── */
+.print-toggle-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
+.print-toggle-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.print-toggles{display:flex;flex-wrap:wrap;gap:8px}
+.print-toggle-item{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:12px;cursor:pointer;user-select:none;transition:.2s}
+.print-toggle-item:has(input:checked){background:var(--brown);color:#fff;border-color:var(--brown)}
+.print-toggle-item input{display:none}
+/* ── ACTION BAR ── */
+.action-bar{position:sticky;bottom:0;background:rgba(245,240,232,.95);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:10px 20px;display:flex;gap:10px;justify-content:flex-end;z-index:100}
+.btn{padding:9px 20px;border-radius:5px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:.2s}
+.btn-primary{background:var(--brown);color:#fff}
+.btn-primary:hover{background:#4a3828}
+.btn-secondary{background:transparent;color:var(--brown);border:2px solid var(--border)}
+.btn-secondary:hover{border-color:var(--brown);background:rgba(92,74,50,.06)}
+.btn-save{background:var(--green);color:#fff}
+.btn-save:hover{background:#155d38}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:70px;right:20px;background:var(--brown);color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;z-index:9999;display:none;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:pre-wrap}
+#toast.show{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESUME MODAL ── */
+.resume-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;display:flex;align-items:center;justify-content:center}
+.resume-box{background:#fff;border-radius:12px;padding:36px 40px;max-width:440px;width:90%;box-shadow:0 12px 48px rgba(0,0,0,.35);text-align:center}
+.resume-box h2{font-size:19px;color:var(--brown);margin-bottom:6px;letter-spacing:.4px}
+.resume-box .resume-meta{font-size:13px;color:#7a6050;margin:14px 0 26px;line-height:1.7;background:#fdf9f3;border-radius:6px;padding:12px 16px;border:1px solid var(--border)}
+.resume-box .resume-meta strong{color:#2c1a0e;display:block}
+.resume-btns{display:flex;gap:12px;justify-content:center}
+
+/* ══════ PREVIEW OVERLAY ══════ */
+.preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;overflow-y:auto;padding:0}
+.preview-overlay.open{display:flex;flex-direction:column;align-items:center}
+.preview-toolbar{background:#2c2c2c;color:#fff;padding:10px 20px;display:flex;gap:10px;align-items:center;width:100%;position:sticky;top:0;z-index:10}
+.preview-toolbar span{flex:1;font-size:13px;font-family:inherit}
+.preview-pages{padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+
+/* ══════ PRINT PAGES ══════ */
+.page{background:#fff;width:1050px;min-height:740px;padding:22px 28px;font-family:sans-serif;font-size:17px;color:#1a1a1a;page-break-after:always;display:flex;flex-direction:column;border:1px solid #ccc}
+.pg-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #3c2a1a;padding-bottom:8px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid}
+.pg-logo{font-size:33px;font-weight:normal;color:#3c2a1a;letter-spacing:2px;font-family:'Courier New',Courier,monospace}
+.pg-doc-info{text-align:right;font-size:14px;color:#555}
+.pg-doc-info .doc-no{font-size:21px;font-weight:900;color:#3c2a1a}
+.meta-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.meta-table td{border:1px solid #c0a878;padding:5px 8px;font-size:15px}
+.meta-table td:first-child{background:#f5ede0;font-weight:700;width:1%;white-space:nowrap;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#5c4a32}
+.meta-table td:nth-child(3){background:#f5ede0;font-weight:700;width:1%;white-space:nowrap;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#5c4a32}
+.meta-table td:nth-child(2){text-transform:uppercase}
+.meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
+.meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
+.issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:4px 7px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:9px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:13px;font-weight:700;color:#c0392b;text-transform:uppercase}.slide-info-table td:first-child{width:calc((100% - 20px) / 3 + 5px)}.slide-info-table td:nth-child(2),.slide-info-table td:nth-child(3),.slide-info-table td:nth-child(4){width:calc((100% - 20px) / 6 + 5px)}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
+.photo-print{display:flex;flex-direction:column;gap:4px}
+.photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
+.no-photo{width:100%;aspect-ratio:4/3;background:#eee;display:flex;align-items:center;justify-content:center;font-size:14px;color:#999;border:1px solid #ddd}
+.print-cat{font-size:13px;font-weight:900;color:#1a5276;min-height:2.6em}
+.print-cat em{font-weight:400;font-style:italic;color:#4a7aaa;text-transform:uppercase}
+.print-type{font-size:13px;font-weight:700;color:#c0392b;margin-top:1px;min-height:2.6em}
+.print-type em{font-weight:400;font-style:italic;color:#c06040}
+.print-caption{font-size:13px;color:#1a1a1a;margin-top:2px;text-align:justify}
+.print-caption em{font-style:italic;color:#7a6050}
+.rc-print-title,.capa-print-title{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px}
+.fishbone-print{margin:8px 0;border:1px solid #c0a878;border-radius:4px;overflow:visible;background:#fdfaf5}
+.rc-print-list{margin-top:10px}
+.rc-print-cat{margin-bottom:14px}
+.rc-print-cat-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.rc-print-cat-title em{font-style:italic;color:#4a7aaa;font-weight:400}
+.rc-print-item{display:flex;gap:6px;font-size:14px;padding:3px 0}
+.rc-print-code{color:#b8860b;font-weight:900;min-width:58px;flex-shrink:0}
+.rc-print-text{color:#1a1a1a}
+.rc-print-text em{font-style:italic;color:#555}
+.rc-print-note{color:#555;font-style:italic}
+.capa-print-group{margin-bottom:14px}
+.capa-print-group-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.capa-print-group-title em{font-style:italic;color:#4a7aaa;font-weight:400}
+.capa-print-item{display:flex;gap:6px;font-size:14px;padding:3px 0}
+.capa-print-code{color:#b8860b;font-weight:900;min-width:62px;flex-shrink:0}
+.capa-print-text{color:#1a1a1a}
+.capa-print-text em{font-style:italic;color:#555}
+.capa-print-note{color:#555;font-style:italic}
+.pg-footer{margin-top:auto;border-top:1px solid #e0d0b0;padding-top:5px;display:flex;justify-content:space-between;font-size:12px;color:#999}
+.sign-row{margin-top:16px;border-top:1px solid #e0d0b0;padding-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sign-box{display:flex;flex-direction:column;gap:4px}
+.sign-label{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#3c2a1a;margin-bottom:6px}
+.sign-label em{font-weight:400;font-style:italic;color:#7a6050}
+.sign-line{border-bottom:1px solid #888;height:40px;margin-bottom:6px}
+.sign-name{font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+
+/* ── PRODUCT LIST (header) ── */
+.plist-table{width:100%;border-collapse:collapse;margin-top:8px}
+.plist-table th{background:#f5ede0;font-size:10px;font-weight:700;color:#5c4a32;text-transform:uppercase;letter-spacing:.5px;padding:5px 8px;border:1px solid var(--border);text-align:left}
+.plist-table td{border:1px solid var(--border);padding:3px 5px;vertical-align:middle}
+.plist-table .num-col{color:#9a8070;font-size:11px;text-align:center;width:26px}
+.plist-table input{border:none;background:transparent;font-family:inherit;font-size:12px;width:100%;outline:none;color:#2c1a0e;padding:2px 2px}
+.plist-table input:focus{background:#fdf9f3;border-radius:2px}
+.plist-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:1px 5px;transition:.15s}
+.plist-del:hover{color:var(--red)}
+.add-product-btn{margin-top:8px;padding:5px 14px;border:1.5px dashed var(--accent);background:none;border-radius:4px;color:var(--brown);font-family:inherit;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:.3px;transition:.2s}
+.add-product-btn:hover{background:rgba(200,169,110,.1);border-color:var(--brown)}
+.plist-paste-active{outline:2px dashed #5b8c5a;outline-offset:2px;background:rgba(91,140,90,.04);border-radius:4px}
+/* ── PRODUCT SUMMARY (print) ── */
+.prod-sum-table{width:100%;border-collapse:collapse;margin-top:10px}
+.prod-sum-table th{background:#3c2a1a;color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border:1px solid #c0a878;text-align:left}
+.prod-sum-table td{border:1px solid #c0a878;padding:5px 8px;font-size:13px;vertical-align:middle}
+.prod-sum-table tr:nth-child(even) td{background:#fdf9f3}
+.prod-sum-table .num{text-align:center;color:#9a8070;font-size:11px}
+.prod-sum-table .code-cell{font-weight:700;color:#1a5276;white-space:nowrap}
+.prod-sum-table .fail-cell{font-weight:700;color:#c0392b;text-align:center}
+.prod-sum-table .rate-cell{font-weight:700;text-align:center}
+.prod-sum-table .total-row td{background:#f5ede0;font-weight:700;border-top:2px solid #c0a878}
+
+@page{size:297mm 210mm;margin:10mm 12mm;}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff!important}
+  .app-header,.tab-bar,.tab-panel,.action-bar,.preview-toolbar,#toast{display:none!important}
+  .preview-overlay{display:block!important;position:static!important;background:none!important;padding:0!important}
+  .preview-pages{display:block!important;padding:0!important;gap:0!important}
+  .page{break-after:page;page-break-after:always;border:none!important;box-shadow:none!important;width:100%!important;min-height:190mm!important;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .fishbone-print{flex:none!important}
+}
+</style>
+<!-- SheetJS for Excel import -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Saved state — populated on Save, null when fresh app -->
+<script id="__boka_saved_state__" type="application/json">null</script>
+</head>
+<body>
+
+<!-- ══ RESUME MODAL ══ -->
+<div class="resume-modal" id="resume-modal" style="display:none">
+  <div class="resume-box">
+    <div style="font-size:36px;margin-bottom:10px">📂</div>
+    <h2>Resume Saved Report?<br><em style="font-weight:400;font-size:14px;color:#9a8070"># Tiếp tục báo cáo đã lưu?</em></h2>
+    <div class="resume-meta" id="resume-meta"></div>
+    <div class="resume-btns">
+      <button class="btn btn-primary" onclick="resumeFromState()" style="font-size:14px;padding:10px 22px">📂 Resume <em style="font-size:12px;font-weight:400"># Tiếp tục</em></button>
+      <button class="btn btn-secondary" onclick="startFresh()" style="font-size:14px;padding:10px 22px">🆕 New Report <em style="font-size:12px;font-weight:400"># Mới</em></button>
+    </div>
+  </div>
+</div>
+
+<div class="app-header">
+  <div class="logo">BOKA</div>
+  <div style="flex:1">
+    <div style="font-size:15px;font-weight:700;letter-spacing:1px">Quality Report Tool</div>
+  </div>
+  <button id="btn-guide" onclick="openUserGuide()" title="User Guide # Hướng dẫn" style="background:rgba(255,255,255,.15);border:1px solid rgba(200,169,110,.5);border-radius:5px;color:var(--accent);font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:inherit;letter-spacing:.3px;white-space:nowrap">📖 Guide</button>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="header" onclick="switchTab(this,'header')">📋 Header</button>
+  <button class="tab-btn" data-tab="issue" onclick="switchTab(this,'issue')">📸 Issue / Photo</button>
+  <button class="tab-btn" data-tab="rc" onclick="switchTab(this,'rc')">🔍 Root Cause</button>
+  <button class="tab-btn" data-tab="capa" onclick="switchTab(this,'capa')">✅ CAPA</button>
+</div>
+
+<!-- ══ HEADER TAB ══ -->
+<div id="tab-header" class="tab-panel active">
+  <div class="card">
+    <div class="card-title">Report Information <em style="font-weight:400;color:#9a8070;font-style:italic"># Thông tin báo cáo</em></div>
+    <div class="form-row">
+      <div class="form-group" style="max-width:165px">
+        <label>Report Date <em># Ngày</em></label>
+        <input type="date" id="hdr-date">
+      </div>
+      <div class="form-group" style="max-width:120px">
+        <label>Report No. <em># Số</em></label>
+        <input type="text" id="hdr-no" placeholder="001">
+      </div>
+      <div class="form-group">
+        <label>Product / Item <em># Sản phẩm</em></label>
+        <input type="text" id="hdr-product" placeholder="Product name / Item code">
+      </div>
+      <div class="form-group">
+        <label>PI / WO <em># Đơn hàng</em></label>
+        <input type="text" id="hdr-piwo" placeholder="PI / WO number">
+      </div>
+      <div class="form-group" style="max-width:120px">
+        <label>Inspected Qty <em># SL Kiểm tra</em></label>
+        <input type="number" id="hdr-qty-insp" placeholder="0" min="0">
+      </div>
+      <div class="form-group" style="max-width:110px">
+        <label>Defect Qty <em># SL Lỗi</em></label>
+        <input type="number" id="hdr-qty-def" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer / Brand <em># Khách hàng</em></label>
+        <input type="text" id="hdr-customer" placeholder="Customer name">
+      </div>
+      <div class="form-group">
+        <label>Reported By <em># Người báo cáo</em></label>
+        <input type="text" id="hdr-reporter" placeholder="Name">
+      </div>
+      <div class="form-group">
+        <label>Department <em># Bộ phận</em></label>
+        <select id="hdr-dept" onchange="deptSelChange()">
+          <option value="">— Select —</option>
+          <option value="QA">QA</option>
+          <option value="QC">QC</option>
+          <option value="PRODUCTION">PRODUCTION</option>
+          <option value="PLANNING">PLANNING</option>
+          <option value="PURCHASING">PURCHASING</option>
+          <option value="ACCOUNTANT">ACCOUNTANT</option>
+          <option value="TECHNICAL">TECHNICAL</option>
+          <option value="R&D">R&D</option>
+          <option value="WAREHOUSE">WAREHOUSE</option>
+          <option value="SUPPLIER">SUPPLIER</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </div>
+      <div class="form-group" id="dept-other-group" style="display:none;max-width:180px">
+        <label>Specify dept <em># Ghi rõ</em></label>
+        <input type="text" id="hdr-dept-other" placeholder="Department name…" oninput="deptOtherInput()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Description of Issue <em># Mô tả vấn đề</em></label>
+        <textarea id="hdr-desc" rows="3" placeholder="Brief description of the non-conformance # Mô tả ngắn gọn…"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Severity <em style="font-weight:400;color:#9a8070;font-style:italic"># Mức độ nghiêm trọng</em></div>
+    <div class="sev-group">
+      <button class="sev-btn" data-sev="Critical" onclick="setSeverity('Critical')">🔴 Critical <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Nghiêm trọng</em></button>
+      <button class="sev-btn" data-sev="Major" onclick="setSeverity('Major')">🟠 Major <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Lớn</em></button>
+      <button class="sev-btn" data-sev="Minor" onclick="setSeverity('Minor')">🟡 Minor <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Nhỏ</em></button>
+      <button class="sev-btn" data-sev="Observation" onclick="setSeverity('Observation')">🔵 Observation <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Quan sát</em></button>
+    </div>
+  </div>
+
+<!-- ── PRODUCT LIST ── -->
+<div class="card">
+  <div class="card-title">Product List <em style="font-weight:400;color:#9a8070;font-style:italic"># Danh sách sản phẩm</em></div>
+  <table class="plist-table">
+    <thead>
+      <tr>
+        <th class="num-col">#</th>
+        <th style="width:22%">Product Code <em style="font-weight:400;font-style:italic"># Mã SP</em></th>
+        <th>Product Name <em style="font-weight:400;font-style:italic"># Tên SP</em></th>
+        <th style="width:120px">PI / WO<br><em style="font-weight:400;font-style:italic"># Đơn hàng</em></th>
+        <th style="width:100px">Total Qty <em style="font-weight:400;font-style:italic"># SL Kiểm</em></th>
+        <th style="width:36px"></th>
+      </tr>
+    </thead>
+    <tbody id="product-list-body"></tbody>
+  </table>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+    <button class="add-product-btn" style="margin-top:0" onclick="addProduct()">＋ Add Product <em style="font-style:italic;font-size:11px"># Thêm sản phẩm</em></button>
+    <button class="add-product-btn" style="margin-top:0;border-color:#5b8c5a;color:#3a5e3a" onclick="document.getElementById('plist-excel-input').click()">📥 Import Excel <em style="font-style:italic;font-size:11px"># Nhập từ Excel</em></button>
+    <input type="file" id="plist-excel-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importProductExcel(this)">
+    <span id="plist-paste-hint" style="font-size:11px;color:#aaa;font-style:italic">— hoặc copy từ Excel rồi paste vào bảng</span>
+  </div>
+</div>
+
+<!-- ── PRINT SECTION TOGGLES ── -->
+<div class="print-toggle-card">
+  <div class="print-toggle-title">Print Sections <em style="font-weight:400;color:#9a8070;font-style:italic"># Chọn mục in</em></div>
+  <div class="print-toggles">
+    <label class="print-toggle-item"><input type="checkbox" id="ptog-summary" checked onchange="updatePrintToggles()">📋 Cover / Issue</label>
+    <label class="print-toggle-item"><input type="checkbox" id="ptog-products" checked onchange="updatePrintToggles()">📦 Product Summary</label>
+    <label class="print-toggle-item"><input type="checkbox" id="ptog-fishbone" checked onchange="updatePrintToggles()">🔍 RC Fishbone</label>
+    <label class="print-toggle-item"><input type="checkbox" id="ptog-rclist" checked onchange="updatePrintToggles()">📝 RC List</label>
+    <label class="print-toggle-item"><input type="checkbox" id="ptog-capa" checked onchange="updatePrintToggles()">✅ CAPA</label>
+  </div>
+  <div style="margin-top:10px;padding:8px 4px;font-size:11px;color:#9a8070;border-top:1px solid #e0d4c0;">
+    For copyright &amp; technical support, please contact — <em style="font-weight:400">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</em> <a href="mailto:Hieu.tran@boka.ltd" style="color:#5c4a32;text-decoration:none;font-weight:600">Hieu.tran@boka.ltd</a>
+  </div>
+</div>
+</div>
+
+<!-- ══ ISSUE TAB ══ -->
+<div id="tab-issue" class="tab-panel">
+  <div id="slides-container"></div>
+  <button class="add-slide-btn" onclick="addSlide()">＋ Add Slide # <em style="font-style:italic;font-size:12px">Thêm trang ảnh</em></button>
+</div>
+
+<!-- ══ ROOT CAUSE TAB ══ -->
+<div id="tab-rc" class="tab-panel">
+  <div class="card">
+    <div class="card-title">Fishbone Diagram — 5M1E <em style="font-weight:400;color:#9a8070;font-style:italic"># Biểu đồ xương cá</em></div>
+    <div class="fishbone-container" id="fishbone-live"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Select Root Causes <em style="font-weight:400;color:#9a8070;font-style:italic"># Chọn nguyên nhân</em></div>
+    <div class="rc-accordion" id="rc-accordion"></div>
+  </div>
+</div>
+
+<!-- ══ CAPA TAB ══ -->
+<div id="tab-capa" class="tab-panel">
+  <div class="card">
+    <div class="card-title">Corrective &amp; Preventive Actions <em style="font-weight:400;color:#9a8070;font-style:italic"># Hành động khắc phục &amp; phòng ngừa</em></div>
+    <div id="capa-container"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Additional Notes <em style="font-weight:400;color:#9a8070;font-style:italic"># Ghi chú thêm</em></div>
+    <textarea id="capa-notes" class="form-group" style="display:block;width:100%" rows="3" placeholder="Responsible person / Timeline / Other notes — Người phụ trách / Thời hạn / Ghi chú khác…"></textarea>
+  </div>
+</div>
+
+<!-- ══ ACTION BAR ══ -->
+<div class="action-bar">
+  <button class="btn btn-secondary" onclick="openPreview()">👁 Preview # In thử</button>
+  <button id="btn-cloud-list" class="btn btn-secondary" onclick="openReportsList()" style="display:none;border-color:#2980b9;color:#2980b9">📋 Reports</button>
+  <button id="btn-local-history" class="btn btn-secondary" onclick="openLocalHistory()" style="display:none;border-color:#27ae60;color:#27ae60">📂 History</button>
+  <button id="btn-cloud-save" class="btn btn-save" onclick="saveToCloud()" style="display:none;background:#2980b9">☁️ Save Cloud</button>
+  <button id="btn-export-html" class="btn btn-save" onclick="saveReport()">⬇ Export HTML</button>
+  <button class="btn btn-secondary" onclick="openSettings()" title="Settings / Cài đặt" style="padding:9px 13px">⚙️</button>
+</div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;padding:24px;width:min(92vw,520px);box-shadow:0 8px 40px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <span style="font-size:16px;font-weight:900;color:#3c2a1a">⚙️ Settings <em style="font-weight:400;font-size:13px;color:#9a8070"># Cài đặt</em></span>
+      <button onclick="closeSettings()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#777;line-height:1">✕</button>
+    </div>
+
+    <!-- Cloud URL -->
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">
+        ☁️ Google Apps Script URL <em style="text-transform:none;font-weight:400">(cloud backend)</em>
+      </label>
+      <input id="settings-script-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"
+        style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
+      <div style="font-size:11px;color:#9a8070;margin-top:4px">Dán URL sau khi deploy Apps Script. Lưu vào trình duyệt (localStorage).</div>
+    </div>
+
+    <!-- Save mode -->
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px">
+        💾 Chế độ lưu <em style="text-transform:none;font-weight:400"># Save destination</em>
+      </label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+          <input type="radio" name="save-mode" value="both" id="sm-both" style="accent-color:#5c4a32"> Cả hai
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+          <input type="radio" name="save-mode" value="cloud" id="sm-cloud" style="accent-color:#5c4a32"> ☁️ Cloud only
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+          <input type="radio" name="save-mode" value="local" id="sm-local" style="accent-color:#5c4a32"> 💻 Local only
+        </label>
+      </div>
+    </div>
+
+    <!-- Local folder -->
+    <div style="margin-bottom:16px;padding:10px 12px;background:#fdfaf5;border:1px solid #e0d4c0;border-radius:5px">
+      <div style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+        📁 Thư mục lưu local <em style="text-transform:none;font-weight:400"># Local save folder</em>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="settings-local-folder" style="font-size:13px;color:#3c2a1a;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">(chưa chọn)</span>
+        <button onclick="changeLocalFolder()" style="padding:5px 12px;border-radius:4px;border:1px solid #c8b89a;background:#fff;font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap;color:#5c4a32;font-weight:700">📁 Đổi thư mục</button>
+        <button onclick="clearLocalFolder()" title="Xoá thư mục đã nhớ" style="padding:5px 8px;border-radius:4px;border:1px solid #e0b0a0;background:#fff4f2;font-family:inherit;font-size:12px;cursor:pointer;color:#c0392b">✕</button>
+      </div>
+      <div style="font-size:11px;color:#9a8070;margin-top:6px">Chọn 1 lần, tự động lưu vào đây mỗi lần sau (không cần chọn lại). Chrome/Edge only.</div>
+    </div>
+
+    <!-- User Guide URL -->
+    <div style="margin-bottom:22px">
+      <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">
+        📖 User Guide URL
+      </label>
+      <input id="settings-guide-url" type="url" placeholder="Default: Boka_QC_UserGuide.html (cùng thư mục)"
+        style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
+      <div style="font-size:11px;color:#9a8070;margin-top:4px">Mặc định: <code>Boka_QC_UserGuide.html</code> cùng thư mục. Điền URL để override (Google Docs, server…).</div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #e0d4c0;padding-top:16px">
+      <button onclick="closeSettings()" style="padding:8px 18px;border-radius:5px;border:1px solid #c8b89a;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;color:#5c4a32">Huỷ # Cancel</button>
+      <button onclick="saveSettings()" style="padding:8px 18px;border-radius:5px;border:none;background:#5c4a32;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">💾 Lưu # Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PREVIEW OVERLAY ══ -->
+<div class="preview-overlay" id="preview-overlay">
+  <div class="preview-toolbar">
+    <span id="preview-title-bar">Boka QC Report Preview</span>
+    <button class="btn btn-primary" onclick="const _t=document.title;document.title=getFileName();window.print();setTimeout(()=>document.title=_t,500)" style="padding:6px 14px;font-size:12px">🖨 Print # In</button>
+    <button class="btn" onclick="closePreview()" style="padding:6px 14px;font-size:12px;background:#555;color:#fff">✕ Close</button>
+  </div>
+  <div class="preview-pages" id="print-pages"></div>
+</div>
+
+<!-- ══ REPORTS LIST OVERLAY ══ -->
+<div class="preview-overlay" id="reports-overlay">
+  <div class="preview-toolbar">
+    <span id="reports-overlay-title" style="font-weight:700">📋 Danh sách báo cáo <em style="font-weight:400;font-size:12px"># Reports</em></span>
+    <div style="display:flex;gap:8px;align-items:center;flex:1;max-width:360px;margin:0 16px">
+      <input id="reports-search" type="search" placeholder="🔍 Search… (no, product, customer, date, severity)"
+        oninput="filterReports(this.value)"
+        style="flex:1;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:5px 10px;font-family:inherit;font-size:12px;background:rgba(255,255,255,.15);color:#fff;outline:none;min-width:0"
+        onfocus="this.style.background='rgba(255,255,255,.25)'" onblur="this.style.background='rgba(255,255,255,.15)'">
+    </div>
+    <button class="btn" onclick="closeReportsList()" style="padding:6px 14px;font-size:12px;background:#555;color:#fff">✕ Close</button>
+  </div>
+  <div style="padding:20px;max-width:860px;margin:0 auto">
+    <div id="reports-list-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════ */
+const TAXONOMY = {
+  "PACKAGING & HARDWARE / LỖI VỀ ĐÓNG GÓI & HARDWARE (PACK)":{
+    "PACK-MISS":"Components / Hardware Missing — Thiếu Hardware / Chi Tiết",
+    "PACK-WRLA":"Wrong Labeling — Sai / Thiếu Tem Nhãn",
+    "PACK-POOR":"Poor Packaging — Đóng Gói Kém Hoặc Không Đảm Bảo Chất Lượng",
+    "PACK-WRPA":"Wrong Packing — Đóng Gói Sai Tiêu Chuẩn / Quy Cách / Không An Toàn",
+    "PACK-TRDA":"Transit Damage — Lỗi Do Quá Trình Vận Chuyển",
+    "PACK-HADE":"Handling Defects — Lỗi Do Bộ Phận Vận Chuyển / Lưu Trữ / Đóng Gói"
+  },
+  "PRODUCT SURFACE / LỖI BỀ MẶT SẢN PHẨM (PRSU)":{
+    "PRSU-UPDE":"Upholstery Defects — Lỗi Liên Quan Đến Vải, Da, Bọc Nệm",
+    "PRSU-SUIN":"Surface Indentation — Bề Mặt Bị Cấn, Lõm",
+    "PRSU-SCRA":"Scratches — Vết Trầy",
+    "PRSU-NAIL":"Nail Issue — Vấn Đề Về Đinh",
+    "PRSU-BLIS":"Blisters — Phồng, Dộp",
+    "PRSU-DIRT":"Dirty / Stained — Vết Bẩn",
+    "PRSU-RUST":"Rusted — Bị Rỉ Sét",
+    "PRSU-WORM":"Worm — Mối Mọt"
+  },
+  "FINISHING / LỖI HOÀN THIỆN, SƠN (FINI)":{
+    "FINI-POOR":"Poor Finishing — Chất Lượng Hoàn Thiện Kém",
+    "FINI-REPO":"Resin Pocket — Túi Dầu",
+    "FINI-WRFI":"Wrong Finishing — Sai Màu Hoàn Thiện",
+    "FINI-CODI":"Color Different — Màu Sắc Khác Biệt Giữa Các Sản Phẩm / Chi Tiết",
+    "FINI-SAND":"Sanding Issue — Vấn Đề Chà Nhám"
+  },
+  "CONSTRUCTION / LỖI KẾT CẤU (CONS)":{
+    "CONS-ASFA":"Assembly Failure — Lỗi Lắp Ráp",
+    "CONS-STRU":"Construction Failure — Lỗi Kết Cấu",
+    "CONS-DURA":"Short Lifespan Or Low Durability — Tuổi Thọ Hoặc Độ Bền Thấp",
+    "CONS-CRAC":"Cracking — Nứt Gỗ",
+    "CONS-SPLI":"Split — Tách Gỗ / Mối Ghép",
+    "CONS-GLUE":"Glue Issue — Vấn Đề Keo",
+    "CONS-DELA":"Delamination — Tách Lớp",
+    "CONS-WRAP":"Warping — Cong Vênh"
+  },
+  "SPEC & COMPLIANCE / LỖI VỀ THÔNG SỐ VÀ TIÊU CHUẨN (SPCO)":{
+    "SPCO-WORK":"Details In Workmanship — Tay Nghề Công Nhân",
+    "SPCO-VENE":"Not Meet Veneer Standard — Không Đạt Tiêu Chuẩn Veneer",
+    "SPCO-WOFI":"Not Meet Wood / Finishing Standard — Không Đạt TC Gỗ / Màu",
+    "SPCO-KNOT":"Knot Issue — Vấn Đề Mắt Gỗ",
+    "SPCO-POOR":"Poor Quality — Chất Lượng Kém",
+    "SPCO-NOCO":"Non-Compliant Material — Vật Liệu Không Đúng Tiêu Chuẩn",
+    "SPCO-DRAW":"Wrong Dimensions / Drawing — Sai Kích Thước / Bản Vẽ",
+    "SPCO-PROC":"Wrong Process — Sai Quy Trình",
+    "SPCO-PIEC":"Wrong Pieces — Thiếu / Sai Phôi",
+    "SPCO-OVSA":"Oversanding — Chà Nhám Quá Mức"
+  }
+};
+
+const WC_STAGES = ["Rough Mill","Fine Mill","CNC","Assembly","Finishing","Fitting","Packing","Upholstery","Claim","Other"];
+
+const RC_DATA = {
+  man:{label_en:"MAN — Personnel",label_vi:"Con người",icon:"👷",items:[
+    {code:"MAN-01",en:"Inexperienced / new operator",vi:"Thợ thiếu kinh nghiệm / nhân viên mới"},
+    {code:"MAN-02",en:"Human error / incorrect operation",vi:"Lỗi thao tác / vận hành sai"},
+    {code:"MAN-03",en:"Fatigue / poor physical condition",vi:"Mệt mỏi / thể trạng kém"},
+    {code:"MAN-04",en:"Procedure / document / drawing not followed",vi:"Không tuân thủ quy trình / tài liệu / bản vẽ"},
+    {code:"MAN-05",en:"Understaffed / overloaded",vi:"Thiếu nhân lực / quá tải"}
+  ]},
+  machine:{label_en:"MACHINE — Equipment",label_vi:"Máy móc / Thiết bị",icon:"⚙️",items:[
+    {code:"MACH-01",en:"Equipment breakdown / malfunction",vi:"Thiết bị hỏng / trục trặc"},
+    {code:"MACH-03",en:"Incorrect tool / jig / fixture setting",vi:"Cài đặt sai dụng cụ / gá"},
+    {code:"MACH-04",en:"Machine wear / out-of-spec condition",vi:"Máy mòn / lệch thông số"}
+  ]},
+  material:{label_en:"MATERIAL",label_vi:"Nguyên vật liệu",icon:"🪵",items:[
+    {code:"MAT-01",en:"Defective incoming material",vi:"Nguyên liệu đầu vào lỗi"},
+    {code:"MAT-02",en:"Wrong material used",vi:"Dùng sai nguyên vật liệu"},
+    {code:"MAT-03",en:"Storage / handling damage or deficiency",vi:"Bảo quản / vận chuyển gây hư hỏng, thiếu sót"},
+    {code:"MAT-04",en:"Supplier / vendor quality issue",vi:"Vấn đề chất lượng từ nhà cung cấp"}
+  ]},
+  method:{label_en:"METHOD — Process",label_vi:"Phương pháp / Quy trình",icon:"📋",items:[
+    {code:"METH-01",en:"Drawing / WI / procedure — incomplete, unclear, or wrong revision",vi:"Bản vẽ / hướng dẫn / quy trình thiếu sót, không rõ ràng, sai phiên bản"},
+    {code:"METH-02",en:"Incorrect process / assembly sequence",vi:"Trình tự gia công / lắp ráp sai"},
+    {code:"METH-03",en:"No established standard",vi:"Chưa có tiêu chuẩn"},
+    {code:"METH-04",en:"Incorrect handling method",vi:"Phương pháp thao tác sai"},
+    {code:"METH-05",en:"Drawing / procedure not updated after change",vi:"Bản vẽ / quy trình chưa cập nhật sau thay đổi"}
+  ]},
+  measurement:{label_en:"MEASUREMENT",label_vi:"Đo lường / Kiểm tra",icon:"📏",items:[
+    {code:"MEAS-01",en:"Instrument not calibrated",vi:"Dụng cụ đo chưa hiệu chuẩn"},
+    {code:"MEAS-02",en:"Incorrect inspection method",vi:"Phương pháp kiểm tra sai"},
+    {code:"MEAS-03",en:"Inspection step skipped / missed",vi:"Bỏ sót bước kiểm tra"},
+    {code:"MEAS-04",en:"Measurement tool defect",vi:"Dụng cụ đo bị lỗi / hư"},
+    {code:"MEAS-05",en:"Missing template / jig / tooling",vi:"Thiếu rập / gá / công cụ"}
+  ]},
+  env:{label_en:"ENVIRONMENT",label_vi:"Môi trường",icon:"🌡️",items:[
+    {code:"ENV-01",en:"Temperature / humidity out of range",vi:"Nhiệt độ / độ ẩm ngoài phạm vi"},
+    {code:"ENV-02",en:"Dust / contamination",vi:"Bụi / ô nhiễm môi trường"},
+    {code:"ENV-03",en:"Insufficient lighting",vi:"Ánh sáng không đủ"},
+    {code:"ENV-04",en:"Poor workspace layout",vi:"Bố trí không gian làm việc kém"}
+  ]}
+};
+
+const CAPA_GROUPS = [
+  {title:"Training & Competency",title_vi:"Đào tạo & Năng lực",items:[
+    {code:"CAPA-01",en:"Conduct re-training / skill refresher",vi:"Đào tạo lại / bổ sung kỹ năng"},
+    {code:"CAPA-02",en:"Assign qualified / experienced personnel",vi:"Phân công nhân sự có năng lực / kinh nghiệm"},
+    {code:"CAPA-03",en:"Update training records",vi:"Cập nhật hồ sơ đào tạo"}
+  ]},
+  {title:"Process, Documentation & QC",title_vi:"Quy trình, Tài liệu & Kiểm soát CL",items:[
+    {code:"CAPA-04",en:"Revise / create work instruction / process",vi:"Sửa đổi / tạo mới hướng dẫn công việc / quy trình"},
+    {code:"CAPA-05",en:"Create / update QC checklist",vi:"Tạo / cập nhật QC checklist"},
+    {code:"CAPA-06",en:"Add inspection / control point",vi:"Bổ sung điểm kiểm tra / điểm kiểm soát"},
+    {code:"CAPA-07",en:"Establish / update standard (sample, drawing, specification)",vi:"Ban hành / cập nhật tiêu chuẩn (mẫu, bản vẽ, thông số kỹ thuật)"},
+    {code:"CAPA-08",en:"Conduct process / inventory / conveyor line audit",vi:"Thực hiện audit công đoạn / tồn kho / băng chuyền"}
+  ]},
+  {title:"Equipment, Tooling & Measurement",title_vi:"Thiết bị, Dụng cụ & Đo lường",items:[
+    {code:"CAPA-09",en:"Repair / replace equipment, tooling, jig or fixture",vi:"Sửa chữa / thay thế thiết bị, dụng cụ, đồ gá"},
+    {code:"CAPA-10",en:"Upgrade / improve equipment, tooling, jig or fixture",vi:"Nâng cấp / cải tiến thiết bị, dụng cụ, đồ gá"},
+    {code:"CAPA-11",en:"Update preventive maintenance schedule for machinery / equipment",vi:"Cập nhật lịch bảo dưỡng định kỳ cho máy móc / thiết bị"},
+    {code:"CAPA-12",en:"Calibrate measurement instruments",vi:"Hiệu chuẩn dụng cụ đo"}
+  ]},
+  {title:"Material & Supplier",title_vi:"Nguyên liệu & Nhà cung cấp",items:[
+    {code:"CAPA-13",en:"Strengthen incoming material inspection / update material acceptance criteria",vi:"Tăng cường kiểm tra nguyên liệu đầu vào / cập nhật tiêu chí chấp nhận nguyên liệu"},
+    {code:"CAPA-14",en:"Improve material storage / handling method",vi:"Cải thiện phương pháp bảo quản / xử lý và vận chuyển nguyên liệu"},
+    {code:"CAPA-15",en:"Issue supplier corrective action request (SCAR)",vi:"Gửi yêu cầu khắc phục đến nhà cung cấp"}
+  ]},
+  {title:"Containment & Product Disposition",title_vi:"Kiểm soát & Xử lý sản phẩm",items:[
+    {code:"CAPA-16",en:"Quarantine / sort and 100% inspect affected stock",vi:"Cách ly / phân loại và kiểm tra 100% hàng tồn hoặc lô hàng bị ảnh hưởng"},
+    {code:"CAPA-17",en:"Repair affected products",vi:"Sửa chữa sản phẩm bị ảnh hưởng"},
+    {code:"CAPA-18",en:"Rework affected products",vi:"Làm lại / gia công lại sản phẩm bị ảnh hưởng"},
+    {code:"CAPA-19",en:"Scrap / dispose of non-conforming items",vi:"Loại bỏ / tiêu hủy sản phẩm không phù hợp"}
+  ]},
+  {title:"Customer & Engineering Actions",title_vi:"Hành động kỹ thuật & Khách hàng",items:[
+    {code:"CAPA-20",en:"Issue customer notification / concession",vi:"Thông báo khách hàng / xin chấp thuận ngoại lệ"},
+    {code:"CAPA-21",en:"Engineering Change Request (ECR)",vi:"Yêu cầu thay đổi kỹ thuật (ECR)"},
+    {code:"CAPA-22",en:"Provide customer usage and care guidance",vi:"Hướng dẫn khách hàng cách sử dụng và bảo quản sản phẩm để phòng ngừa hư hỏng"}
+  ]}
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let severity = '';
+let slides = [];
+let rcState = {};
+let capaState = {};
+let slideIdCounter = 1;
+let rcCustom = '';
+let capaCustom = '';
+let capaCustomNote = '';
+let capaCustomDone = false;
+let capaCustomDept = '';
+let capaCustomDate = '';
+let capaCustomAsap = false;
+let productList = [];      // [{id, code, name, qty}]
+let productIdCounter = 1;
+
+/* ── Cloud config ── */
+const APPS_SCRIPT_URL_DEFAULT = ''; // hardcoded fallback (leave empty; configure in Settings)
+let currentCloudId = null;  // ID file trên Drive của report đang mở
+let _allReports = [];       // cache for search/filter
+let _localDirHandle = null; // active directory handle for local history
+
+function getScriptUrl(){
+  try{return localStorage.getItem('boka_script_url')||APPS_SCRIPT_URL_DEFAULT;}catch(_){return APPS_SCRIPT_URL_DEFAULT;}
+}
+function getGuideUrl(){
+  try{return localStorage.getItem('boka_guide_url')||'Boka_QC_UserGuide.html';}catch(_){return 'Boka_QC_UserGuide.html';}
+}
+function getSaveMode(){
+  try{return localStorage.getItem('boka_save_mode')||'both';}catch(_){return 'both';}
+}
+
+/* ── IndexedDB helpers (for persisting FileSystemDirectoryHandle) ── */
+function _bokaDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('boka_qc',1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore('kv');
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function dbGet(key){
+  try{const db=await _bokaDB();return new Promise(res=>{const tx=db.transaction('kv','readonly');const r=tx.objectStore('kv').get(key);r.onsuccess=()=>res(r.result??null);r.onerror=()=>res(null);});}catch(_){return null;}
+}
+async function dbSet(key,val){
+  try{const db=await _bokaDB();return new Promise(res=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(val,key);tx.oncomplete=()=>res();tx.onerror=()=>res();});}catch(_){}
+}
+async function dbDel(key){
+  try{const db=await _bokaDB();return new Promise(res=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').delete(key);tx.oncomplete=()=>res();tx.onerror=()=>res();});}catch(_){}
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+function init(){
+  // Check for saved state embedded in this file
+  try{
+    const stEl=document.getElementById('__boka_saved_state__');
+    if(stEl){
+      const st=JSON.parse(stEl.textContent);
+      if(st&&st.v){showResumeDialog(st);return;}
+    }
+  }catch(_){}
+  _doInit();
+}
+
+function _doInit(){
+  document.getElementById('hdr-date').value = todayStr();
+  document.getElementById('hdr-no').value = '001';
+  // RC state
+  Object.keys(RC_DATA).forEach(k=>{
+    rcState[k] = RC_DATA[k].items.map(it=>({code:it.code,checked:false,note:''}));
+  });
+  // CAPA state
+  CAPA_GROUPS.forEach(g=>{g.items.forEach(it=>{capaState[it.code]={checked:false,note:'',done:false,dept:'',date:'',asap:false,photos:[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}]};});});
+  // Product list
+  productList = [];
+  productIdCounter = 1;
+  renderProductList();
+  addSlide();
+  renderRCForm();
+  renderCapaForm();
+  renderFishbone();
+}
+
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function maskDate(v){const d=v.replace(/\D/g,'').slice(0,6);if(d.length>4)return d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4);if(d.length>2)return d.slice(0,2)+'-'+d.slice(2);return d;}
+function fmtDate(v){if(!v)return'—';const mn=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];if(/^\d{2}-\d{2}-\d{2}$/.test(v)){const[d,m,y]=v.split('-');const mi=parseInt(m,10)-1;return mi>=0&&mi<12?`${d}-${mn[mi]}-20${y}`:v;}const p=v.split('-');if(p.length===3){const[yr,mo,dy]=p;const mi=parseInt(mo,10)-1;return mi>=0&&mi<12?`${dy}-${mn[mi]}-${yr}`:v;}return v;}
+function pad(n,l=2){return String(n).padStart(l,'0');}
+function dateForTitle(){const raw=(document.getElementById('hdr-date').value||todayStr()).replace(/-/g,'');return raw.slice(0,8);}
+function getReportNo(){return pad(parseInt(document.getElementById('hdr-no').value)||1,2);}
+function getFileName(){return `${dateForTitle()}_QUALITY_REPORT_${getReportNo()}.html`;}
+
+/* ══════════════════════════════════════
+   TABS
+══════════════════════════════════════ */
+function deptSelChange(){
+  const v=document.getElementById('hdr-dept').value;
+  document.getElementById('dept-other-group').style.display=v==='OTHER'?'':'none';
+}
+function deptOtherInput(){
+  // value read via getDept() at buildPages time
+}
+function getDept(){
+  const sel=document.getElementById('hdr-dept').value||'';
+  if(sel==='OTHER'){const oth=document.getElementById('hdr-dept-other').value||'';return oth?'OTHER — '+oth:'OTHER';}
+  return sel||'—';
+}
+
+let printToggles={summary:true,products:true,fishbone:true,rclist:true,capa:true};
+function updatePrintToggles(){
+  printToggles.summary=document.getElementById('ptog-summary').checked;
+  printToggles.products=(document.getElementById('ptog-products')||{checked:true}).checked;
+  printToggles.fishbone=document.getElementById('ptog-fishbone').checked;
+  printToggles.rclist=document.getElementById('ptog-rclist').checked;
+  printToggles.capa=document.getElementById('ptog-capa').checked;
+}
+function switchTab(btn,tab){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='rc') renderFishbone();
+}
+
+/* ══════════════════════════════════════
+   SEVERITY
+══════════════════════════════════════ */
+function setSeverity(s){
+  severity=s;
+  document.querySelectorAll('.sev-btn').forEach(b=>b.classList.toggle('active',b.dataset.sev===s));
+}
+
+/* ══════════════════════════════════════
+   SLIDES
+══════════════════════════════════════ */
+function addSlide(){
+  const id=slideIdCounter++;
+  slides.push({id,wc:'',wcOther:'',date:todayStr(),productName:'',productCode:'',productRef:null,qtyInsp:'',qtyDef:'',slots:[
+    {src:'',cat:'',type:'',caption:''},
+    {src:'',cat:'',type:'',caption:''},
+    {src:'',cat:'',type:'',caption:''}
+  ]});
+  renderSlides();
+  setTimeout(()=>{const el=document.getElementById('slide-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);
+}
+
+function removeSlide(id){
+  if(slides.length<=1){toast('⚠️ Need at least one slide.\n/ Cần ít nhất một trang ảnh.');return;}
+  slides=slides.filter(s=>s.id!==id);
+  renderSlides();
+}
+
+function renderSlides(){
+  const c=document.getElementById('slides-container');
+  c.innerHTML='';
+  slides.forEach((slide,si)=>{
+    const d=document.createElement('div');
+    d.className='slide-wrapper';d.id='slide-'+slide.id;
+    d.innerHTML=`
+      <div class="slide-header">
+        <span>📸 SLIDE ${si+1} # <em style="font-style:italic;font-weight:400">TRANG ẢNH ${si+1}</em></span>
+        ${slides.length>1?`<button class="slide-remove-btn" onclick="removeSlide(${slide.id})">✕ Remove</button>`:''}
+      </div>
+      ${buildSlideMeta(slide)}
+      <div class="slide-photos">
+        ${slide.slots.map((_,pi)=>buildPhotoSlot(slide,pi)).join('')}
+      </div>`;
+    c.appendChild(d);
+  });
+}
+
+function buildPhotoSlot(slide,pi){
+  const slot=slide.slots[pi];
+  const cats=Object.keys(TAXONOMY);
+  const types=slot.cat?Object.keys(TAXONOMY[slot.cat]):[];
+const emptyArea=`<div class="ph-action-row"><div class="ph-btn-group"><label class="ph-action-btn" title="Chụp ảnh bằng camera"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Camera</span><input type="file" accept="image/*" capture="environment" onchange="loadPhoto(${slide.id},${pi},this)"></label><label class="ph-action-btn" title="Chọn ảnh từ gallery / máy"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Gallery</span><input type="file" accept="image/*" onchange="loadPhoto(${slide.id},${pi},this)"></label></div></div>`;
+  const photoArea=slot.src?`<label style="display:block;width:100%;height:100%;cursor:pointer;position:relative;overflow:hidden"><img src="${slot.src}" alt="photo" style="width:100%;height:100%;object-fit:cover"><input type="file" accept="image/*" class="photo-upload-input" onchange="loadPhoto(${slide.id},${pi},this)"></label>`:emptyArea;
+  return `<div class="photo-slot">
+    <div class="photo-upload-area">
+      ${photoArea}
+    </div>
+    <div class="photo-meta">
+      <select onchange="slotCat(${slide.id},${pi},this.value)">
+        <option value="">-- Category # Nhóm --</option>
+        ${cats.map(c=>`<option value="${esc(c)}"${slot.cat===c?' selected':''}>${catDisplay(c,false)}</option>`).join('')}
+      </select>
+      <select onchange="slotType(${slide.id},${pi},this.value)"${!slot.cat?' disabled':''}>
+        <option value="">-- Defect Type # Loại lỗi --</option>
+        ${types.map(t=>`<option value="${t}"${slot.type===t?' selected':''}>${typeDisplay(TAXONOMY[slot.cat][t],false)}</option>`).join('')}
+      </select>
+      <input type="text" placeholder="Caption # Ghi chú…" value="${esc(slot.caption)}" oninput="slotCaption(${slide.id},${pi},this.value)">
+      ${slot.src?`<button class="clear-photo-btn" onclick="clearPhoto(${slide.id},${pi})">✕ Remove photo</button>`:''}
+    </div>
+  </div>`;
+}
+
+function esc(s){return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* Bilingual display helpers */
+function sentCase(s){if(!s)return '';return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();}
+// Category key: "EN PART / VI PART (CODE)" → EN stays ALL CAPS, VI to sentence case
+function catDisplay(cat,html){
+  if(!cat)return '';
+  const slashIdx=cat.indexOf(' / ');
+  const en=slashIdx>=0?cat.slice(0,slashIdx).trim():cat;
+  const viRaw=slashIdx>=0?cat.slice(slashIdx+3).trim():'';
+  const vi=viRaw.replace(/\s*\([A-Z]+\)\s*$/,'').trim();
+  if(!vi)return en;
+  if(html)return `${en} <em># ${vi}</em>`;
+  return `${en} # ${vi}`;
+}
+// Type value: "EN text — VI text" → both sentence case
+function typeDisplay(val,html){
+  if(!val)return '';
+  const idx=val.indexOf(' — ');
+  if(idx<0)return sentCase(val);
+  const en=sentCase(val.slice(0,idx));
+  const vi=sentCase(val.slice(idx+3));
+  if(!vi)return en;
+  if(html)return `${en} <em># ${vi}</em>`;
+  return `${en} # ${vi}`;
+}
+
+function triggerUpload(id,pi){document.getElementById(`fu-${id}-${pi}`)?.click();}
+
+function getSlotEl(id,pi){
+  const slide=document.getElementById('slide-'+id);
+  if(!slide)return null;
+  return slide.querySelectorAll('.photo-slot')[pi]||null;
+}
+
+/* Resize + compress image to max dimension, returns JPEG data URL via callback */
+function resizeImage(dataUrl,maxPx,quality,cb){
+  const img=new Image();
+  img.onload=function(){
+    let w=img.width,h=img.height;
+    if(w>maxPx||h>maxPx){
+      if(w>=h){h=Math.round(h*maxPx/w);w=maxPx;}
+      else{w=Math.round(w*maxPx/h);h=maxPx;}
+    }
+    const canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    cb(canvas.toDataURL('image/jpeg',quality));
+  };
+  img.onerror=()=>cb(dataUrl); // fallback: use original if decode fails
+  img.src=dataUrl;
+}
+
+function loadPhoto(id,pi,input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    resizeImage(e.target.result,2048,0.82,src=>{
+      const s=slides.find(s=>s.id===id);if(!s)return;
+      s.slots[pi].src=src;
+      const slotEl=getSlotEl(id,pi);
+      if(!slotEl){renderSlides();return;}
+      const area=slotEl.querySelector('.photo-upload-area');
+      // Replace only the upload area content — avoids re-decoding all other base64 images
+      area.innerHTML=`<label style="display:block;width:100%;height:100%;cursor:pointer;position:relative;overflow:hidden"><img src="${src}" alt="photo" style="width:100%;height:100%;object-fit:cover"><input type="file" accept="image/*" class="photo-upload-input" onchange="loadPhoto(${id},${pi},this)"></label>`;
+      const meta=slotEl.querySelector('.photo-meta');
+      if(meta&&!meta.querySelector('.clear-photo-btn')){
+        const btn=document.createElement('button');
+        btn.className='clear-photo-btn';btn.textContent='✕ Remove photo';
+        btn.setAttribute('onclick',`clearPhoto(${id},${pi})`);
+        meta.appendChild(btn);
+      }
+    });
+  };
+  r.readAsDataURL(f);
+}
+
+function clearPhoto(id,pi){
+  const s=slides.find(s=>s.id===id);if(!s)return;
+  s.slots[pi].src='';
+  const slotEl=getSlotEl(id,pi);
+  if(!slotEl){renderSlides();return;}
+  const area=slotEl.querySelector('.photo-upload-area');
+  area.innerHTML=`<div class="ph-action-row"><div class="ph-btn-group"><label class="ph-action-btn" title="Chụp ảnh bằng camera"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Camera</span><input type="file" accept="image/*" capture="environment" onchange="loadPhoto(${id},${pi},this)"></label><label class="ph-action-btn" title="Chọn ảnh từ gallery"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Gallery</span><input type="file" accept="image/*" onchange="loadPhoto(${id},${pi},this)"></label></div></div>`;
+  const btn=slotEl.querySelector('.clear-photo-btn');if(btn)btn.remove();
+}
+
+function slotCat(id,pi,v){
+  const s=slides.find(s=>s.id===id);if(!s)return;
+  s.slots[pi].cat=v;s.slots[pi].type='';
+  const slotEl=getSlotEl(id,pi);
+  if(!slotEl){renderSlides();return;}
+  const sels=slotEl.querySelectorAll('.photo-meta select');
+  if(sels[1]){
+    const types=v?Object.keys(TAXONOMY[v]):[];
+    sels[1].disabled=!v;
+    sels[1].innerHTML='<option value="">-- Defect Type # Loại lỗi --</option>'+
+      types.map(t=>`<option value="${t}">${typeDisplay(TAXONOMY[v][t],false)}</option>`).join('');
+  }
+}
+
+function slotType(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].type=v;}
+function slotCaption(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].caption=v;}
+function slideField(id,field,v){const s=slides.find(s=>s.id===id);if(s)s[field]=v;}
+function slideSetWC(id,v){const s=slides.find(s=>s.id===id);if(s){s.wc=v;if(v!=='Other')s.wcOther='';renderSlides();}}
+
+/* ══════════════════════════════════════
+   PRODUCT LIST
+══════════════════════════════════════ */
+function renderProductList(){
+  const tbody=document.getElementById('product-list-body');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  productList.forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="num-col">${i+1}</td>
+      <td><input type="text" placeholder="e.g. GLO-001" value="${esc(p.code)}" oninput="productField(${p.id},'code',this.value);refreshProductDropdowns()"></td>
+      <td><input type="text" placeholder="Product name…" value="${esc(p.name)}" oninput="productField(${p.id},'name',this.value);refreshProductDropdowns()"></td>
+      <td><input type="text" placeholder="PI / WO…" value="${esc(p.order||'')}" oninput="productField(${p.id},'order',this.value)"></td>
+      <td><input type="number" min="0" placeholder="0" value="${p.qty||''}" oninput="productField(${p.id},'qty',this.value)"></td>
+      <td><button class="plist-del" onclick="removeProduct(${p.id})" title="Remove">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addProduct(){
+  productList.push({id:productIdCounter++,code:'',name:'',order:'',qty:''});
+  renderProductList();
+  refreshProductDropdowns();
+  // focus the new code cell
+  const rows=document.getElementById('product-list-body').querySelectorAll('tr');
+  if(rows.length){const inp=rows[rows.length-1].querySelector('input');if(inp)inp.focus();}
+}
+
+function removeProduct(id){
+  productList=productList.filter(p=>p.id!==id);
+  // Clear refs in slides that pointed to this product
+  slides.forEach(s=>{if(s.productRef===id){s.productRef=null;}});
+  renderProductList();
+  refreshProductDropdowns();
+  renderSlides();
+}
+
+function productField(id,field,val){
+  const p=productList.find(p=>p.id===id);
+  if(p)p[field]=val;
+}
+
+/* ── IMPORT EXCEL ── */
+function importProductExcel(input){
+  const file=input.files[0];
+  if(!file)return;
+  input.value=''; // reset so same file can be re-imported
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // Skip header row if first cell looks like a label (non-numeric, contains letters common in headers)
+      let startRow=0;
+      if(rows.length>0){
+        const firstCell=String(rows[0][0]||'').toLowerCase();
+        if(/code|name|product|mã|tên|sp|no|#/.test(firstCell))startRow=1;
+      }
+      let added=0;
+      for(let i=startRow;i<rows.length;i++){
+        const row=rows[i];
+        const code=String(row[0]||'').trim();
+        const name=String(row[1]||'').trim();
+        const order=String(row[2]||'').trim();
+        const qty=parseFloat(row[3])||'';
+        if(!code&&!name)continue; // skip blank rows
+        productList.push({id:productIdCounter++,code,name,order,qty});
+        added++;
+      }
+      renderProductList();
+      refreshProductDropdowns();
+      if(added===0){alert('Không tìm thấy dữ liệu hợp lệ trong file.\nĐảm bảo cột A = Code, B = Name, C = Order No, D = Qty.');}
+    }catch(err){
+      alert('Lỗi đọc file Excel: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ── PASTE FROM EXCEL (Tab-separated clipboard) ── */
+(function(){
+  // Attach paste listener to the whole document; only act when the product table is visible
+  document.addEventListener('paste',function(e){
+    // Only handle if focus is inside the product list section or on document body (not a textarea/select)
+    const tbl=document.getElementById('product-list-body');
+    if(!tbl)return;
+    const tag=(document.activeElement.tagName||'').toLowerCase();
+    // Allow paste into product table inputs, or when no specific input is focused
+    const inProductTable=tbl.contains(document.activeElement);
+    const neutral=(tag==='body'||tag==='');
+    if(!inProductTable&&!neutral)return;
+
+    const text=(e.clipboardData||window.clipboardData).getData('text');
+    if(!text)return;
+
+    // Detect tab-separated (Excel clipboard format)
+    const lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');
+    if(!lines.some(l=>l.includes('\t')))return; // not Excel TSV, let normal paste happen
+
+    e.preventDefault();
+
+    // Determine start index: if focus is inside a specific row, start from that row
+    let startIdx=productList.length; // default: append
+    if(inProductTable){
+      const activeRow=document.activeElement.closest('tr');
+      if(activeRow){
+        const allRows=[...tbl.querySelectorAll('tr')];
+        const ri=allRows.indexOf(activeRow);
+        if(ri>=0)startIdx=ri;
+      }
+    }
+
+    let added=0;
+    lines.forEach((line,li)=>{
+      const cols=line.split('\t');
+      const code=String(cols[0]||'').trim();
+      const name=String(cols[1]||'').trim();
+      const order=String(cols[2]||'').trim();
+      const qty=parseFloat(String(cols[3]||'').replace(/,/g,''))||'';
+      if(!code&&!name)return;
+
+      const targetIdx=startIdx+li;
+      if(targetIdx<productList.length){
+        // Overwrite existing row
+        if(code)productList[targetIdx].code=code;
+        if(name)productList[targetIdx].name=name;
+        if(order!=='')productList[targetIdx].order=order;
+        if(qty!=='')productList[targetIdx].qty=qty;
+      } else {
+        productList.push({id:productIdCounter++,code,name,order,qty});
+      }
+      added++;
+    });
+
+    if(added>0){
+      renderProductList();
+      refreshProductDropdowns();
+      // Flash the table to give visual feedback
+      const wrap=tbl.closest('table');
+      if(wrap){wrap.classList.add('plist-paste-active');setTimeout(()=>wrap.classList.remove('plist-paste-active'),600);}
+    }
+  });
+})();
+
+function getProductOptions(selectedRef){
+  let html='<option value="">— Select / Nhập tay —</option>';
+  productList.forEach(p=>{
+    if(!p.code&&!p.name)return;
+    const lbl=(p.code&&p.name)?(p.code+' — '+p.name):(p.code||p.name);
+    html+=`<option value="${p.id}"${selectedRef===p.id?' selected':''}>${esc(lbl)}</option>`;
+  });
+  return html;
+}
+
+function slideSetProduct(slideId,val){
+  const s=slides.find(s=>s.id===slideId);
+  if(!s)return;
+  if(val===''){
+    s.productRef=null;
+    // show manual text input
+  } else {
+    const pid=parseInt(val);
+    const p=productList.find(p=>p.id===pid);
+    s.productRef=pid;
+    if(p){s.productCode=p.code;s.productName=p.name;}
+  }
+  // Re-render just the meta area without losing photos
+  const slideEl=document.getElementById('slide-'+slideId);
+  if(!slideEl){renderSlides();return;}
+  const meta=slideEl.querySelector('.slide-meta');
+  if(meta)meta.outerHTML=buildSlideMeta(s);
+}
+
+function refreshProductDropdowns(){
+  const hasProducts=productList.some(p=>p.code||p.name);
+
+  // Refresh per-slide dropdowns
+  slides.forEach(s=>{
+    const slideEl=document.getElementById('slide-'+s.id);
+    if(!slideEl)return;
+    const sel=slideEl.querySelector('.product-sel');
+    if(!sel)return;
+    sel.innerHTML=getProductOptions(s.productRef);
+    // Show select only when there are products, else hide it
+    sel.style.display=hasProducts?'':'none';
+    // Show manual input when no product selected from list (or list empty)
+    const manualWrap=slideEl.querySelector('.product-manual-wrap');
+    if(manualWrap)manualWrap.style.display=(!s.productRef)?'':'none';
+  });
+}
+
+function buildSlideMeta(slide){
+  const wcOtherField = slide.wc==='Other'
+    ? `<div class="form-group" style="min-width:150px"><label>Other (specify) <em># Ghi rõ</em></label><input type="text" value="${esc(slide.wcOther)}" oninput="slideField(${slide.id},'wcOther',this.value)" placeholder="Work center name…"></div>`
+    : '';
+  const manualStyle=(!slide.productRef)?'':'display:none';
+  return `<div class="slide-meta">
+    <div class="form-group" style="flex:0 0 auto;width:240px">
+      <label style="white-space:nowrap;display:block">Work Center / Stage <em># Công đoạn</em></label>
+      <select style="width:240px" onchange="slideSetWC(${slide.id},this.value)">
+        <option value="">-- Select # Chọn --</option>
+        ${WC_STAGES.map(w=>`<option value="${w}"${slide.wc===w?' selected':''}>${w}</option>`).join('')}
+      </select>
+    </div>
+    ${wcOtherField}
+    <div class="form-group" style="flex:0 0 auto;width:185px">
+      <label style="white-space:nowrap;display:block">Issue Date <em># Ngày phát sinh</em></label>
+      <input type="date" style="width:185px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
+    </div>
+    <div class="form-group" style="flex:0 0 auto;min-width:200px">
+      <label style="white-space:nowrap;display:block">Product <em># Sản phẩm</em></label>
+      <select class="product-sel" style="width:200px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
+      <div class="product-manual-wrap" style="${manualStyle}">
+        <input type="text" style="width:200px" placeholder="Product name / Tên SP…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
+      </div>
+    </div>
+    <div class="form-group" style="flex:0 0 auto;width:130px">
+      <label style="white-space:nowrap;display:block">Inspected Qty <em># SL Kiểm</em></label>
+      <input type="number" style="width:130px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value)">
+    </div>
+    <div class="form-group" style="flex:0 0 auto;width:120px">
+      <label style="white-space:nowrap;display:block">Defect Qty <em># SL Lỗi</em></label>
+      <input type="number" style="width:120px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value)">
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   ROOT CAUSE FORM
+══════════════════════════════════════ */
+function renderRCForm(){
+  const acc=document.getElementById('rc-accordion');
+  acc.innerHTML='';
+  Object.keys(RC_DATA).forEach(key=>{
+    const bone=RC_DATA[key];
+    const state=rcState[key];
+    const cnt=state.filter(i=>i.checked).length;
+    const div=document.createElement('div');
+    div.className='rc-bone';
+    div.innerHTML=`
+      <div class="rc-bone-header" onclick="toggleBone('rcb-${key}',this)">
+        <span class="rc-bone-icon">${bone.icon}</span>
+        <span class="rc-bone-label">${bone.label_en} <em style="font-weight:400;letter-spacing:0;font-style:italic"># ${bone.label_vi}</em></span>
+        ${cnt>0?`<span class="rc-bone-count">${cnt} ✓</span>`:''}
+        <span class="rc-bone-chevron">▼</span>
+      </div>
+      <div class="rc-bone-body" id="rcb-${key}">
+        ${bone.items.map((it,i)=>{
+          const st=state[i];
+          return `<div class="rc-item">
+            <div class="rc-item-row">
+              <input type="checkbox" class="rc-item-check" id="rci-${key}-${i}" ${st.checked?'checked':''} onchange="rcToggle('${key}',${i},this.checked)">
+              <label class="rc-item-text" for="rci-${key}-${i}"><span class="code">[${it.code}]</span>${it.en} # <em>${it.vi}</em></label>
+            </div>
+            <div class="rc-item-note${st.checked?' show':''}" id="rcn-${key}-${i}">
+              <input type="text" placeholder="Note # Ghi chú…" value="${esc(st.note)}" oninput="rcState['${key}'][${i}].note=this.value">
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    acc.appendChild(div);
+  });
+  // Custom free-text RC field
+  const customDiv=document.createElement('div');
+  customDiv.style.cssText='margin-top:10px;padding:10px 0 2px;border-top:1px dashed var(--border)';
+  customDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Other # <em style="font-style:italic">Khác</em> <em style="font-weight:400;color:#9a8070">— not in list above # không có trong danh sách</em></div><textarea style="width:100%;border:1px solid var(--border);border-radius:4px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional root cause… # Mô tả nguyên nhân bổ sung…" oninput="rcCustom=this.value">${esc(rcCustom)}</textarea>`;
+  acc.appendChild(customDiv);
+}
+
+function toggleBone(bodyId,header){
+  const b=document.getElementById(bodyId);
+  const open=b.classList.toggle('open');
+  const ch=header.querySelector('.rc-bone-chevron');
+  if(ch)ch.textContent=open?'▲':'▼';
+}
+
+function rcToggle(key,idx,checked){
+  rcState[key][idx].checked=checked;
+  const n=document.getElementById(`rcn-${key}-${idx}`);
+  if(n)n.classList.toggle('show',checked);
+  // Refresh count badge without full re-render
+  const bone=document.querySelector(`#rcb-${key}`).previousElementSibling;
+  const cnt=rcState[key].filter(i=>i.checked).length;
+  let badge=bone.querySelector('.rc-bone-count');
+  if(cnt>0){
+    if(!badge){badge=document.createElement('span');badge.className='rc-bone-count';bone.insertBefore(badge,bone.querySelector('.rc-bone-chevron'));}
+    badge.textContent=cnt+' ✓';
+  }else{if(badge)badge.remove();}
+  renderFishbone();
+}
+
+/* ══════════════════════════════════════
+   FISHBONE SVG
+══════════════════════════════════════ */
+function renderFishbone(){
+  const el=document.getElementById('fishbone-live');
+  if(el)el.innerHTML=buildFishboneSVG();
+}
+
+function fbWrapText(text, maxChars) {
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(w => {
+    const test = cur ? cur + ' ' + w : w;
+    if (test.length <= maxChars) { cur = test; }
+    else { if (cur) lines.push(cur); cur = w; }
+  });
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [text];
+}
+
+function buildFishboneSVG(forPrint){
+  const spineY=348, spineStart=55, spineEnd=1190;
+  const connXs=[300,720,1140];
+  const SPAN=231;   // horizontal span bone-tip → spine (+40% wider)
+  const tickLen=22; // short blue tick length
+  const boxW=336, boxH=43; // box size: +20% width, +30% height vs original
+  const fontEN=15, fontVI=13;
+
+  const branches=[
+    {key:'man',         lbl:'MAN',         lvi:'Con người',   ci:0,side:'top',    tx:300-SPAN, ty:18},
+    {key:'measurement', lbl:'MEASUREMENT', lvi:'Đo lường',    ci:1,side:'top',    tx:720-SPAN, ty:12},
+    {key:'env',         lbl:'ENVIRONMENT', lvi:'Môi trường',  ci:2,side:'top',    tx:1140-SPAN, ty:15},
+    {key:'material',    lbl:'MATERIAL',    lvi:'Nguyên liệu', ci:0,side:'bottom', tx:300-SPAN, ty:680},
+    {key:'machine',     lbl:'MACHINE',     lvi:'Máy móc',     ci:1,side:'bottom', tx:720-SPAN, ty:685},
+    {key:'method',      lbl:'METHOD',      lvi:'Phương pháp', ci:2,side:'bottom', tx:1140-SPAN, ty:680}
+  ];
+
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-250 -50 1600 800" style="${forPrint?'width:100%;height:auto;display:block;margin:0 auto;':'width:100%;display:block;'}background:#fdfaf5;font-family:sans-serif">`;
+  s+=`<defs><marker id="arr${forPrint?'p':''}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#5c4a32"/></marker></defs>`;
+
+  // Spine
+  s+=`<line x1="${spineStart}" y1="${spineY}" x2="${spineEnd}" y2="${spineY}" stroke="#5c4a32" stroke-width="3" marker-end="url(#arr${forPrint?'p':''})"/>`;
+
+  // ISSUE box — rotated 90°, single label
+  const effCX=1227;
+  s+=`<g transform="translate(${effCX},${spineY})">
+    <rect x="-39" y="-70" width="78" height="140" fill="#7a5c3a" rx="4"/>
+    <text transform="rotate(-90)" x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="20" font-weight="bold" letter-spacing="1">ISSUE</text>
+  </g>`;
+
+  branches.forEach(b=>{
+    const sx=connXs[b.ci], sy=spineY, tx=b.tx, ty=b.ty, isTop=b.side==='top';
+    const branchDy=Math.abs(sy-ty);
+
+    // Main bone
+    s+=`<line x1="${sx}" y1="${sy}" x2="${tx}" y2="${ty}" stroke="#7a5c3a" stroke-width="2.2"/>`;
+    s+=`<circle cx="${sx}" cy="${sy}" r="5" fill="#5c4a32"/>`;
+
+    // Branch label
+    const ly1=isTop?ty-18:ty+18;
+    const ly2=isTop?ty-3:ty+32;
+    s+=`<text x="${tx}" y="${ly1}" text-anchor="middle" font-size="20" font-weight="bold" fill="#3c2a1a">${b.lbl}</text>`;
+    s+=`<text x="${tx}" y="${ly2}" text-anchor="middle" font-size="16" font-style="italic" fill="#7a6050">${b.lvi}</text>`;
+
+    const allItems=RC_DATA[b.key]?.items||[];
+    const checked=(rcState[b.key]||[]).map((st,i)=>({...allItems[i],...st})).filter(i=>i.checked);
+    if(!checked.length)return;
+
+    const n=checked.length;
+    const minGap=Math.max(36, Math.min(56, branchDy/(n+1)));
+    const tStep=minGap/branchDy;
+    const totalT=(n-1)*tStep;
+    const tStart=(1-totalT)/2;
+    const tBuf=28/branchDy;
+
+    checked.forEach((item,idx)=>{
+      const tRaw=tStart+idx*tStep;
+      const t=Math.max(tBuf, Math.min(1-tBuf, tRaw));
+      const px=Math.round(tx+t*(sx-tx));
+      const py=Math.round(ty+t*(sy-ty));
+
+      // Bone anchor dot
+      s+=`<circle cx="${px}" cy="${py}" r="2.5" fill="#b09070"/>`;
+
+      // Short blue tick going LEFT
+      const tickX=px-tickLen;
+      s+=`<line x1="${tickX}" y1="${py}" x2="${px}" y2="${py}" stroke="#4a7fc1" stroke-width="1.5"/>`;
+
+      // METH-01: +10% wider box, wrap once each; METH-05: +10% wider, single line; others: fixed
+      const isMeth01=item.code==='METH-01';
+      const itemBoxW=isMeth01?Math.round(boxW*0.88):(item.code==='METH-05'?Math.round(boxW*1.1):boxW);
+      const lineHEN=19, lineHVI=15;
+      let enLines,viLines,dynH;
+      if(isMeth01){
+        enLines=fbWrapText(item.en,40).slice(0,3);
+        viLines=item.vi?fbWrapText(item.vi,44).slice(0,3):[];
+        dynH=Math.round(Math.max(boxH,enLines.length*lineHEN+viLines.length*lineHVI+8)*1.1);
+      }else{
+        enLines=null; viLines=null; dynH=boxH;
+      }
+
+      // Text box to LEFT of tick (centered on py)
+      const bx=tickX-itemBoxW;
+      const by=py-dynH/2;
+      s+=`<rect x="${bx}" y="${by}" width="${itemBoxW}" height="${dynH}" fill="#fdf8f2" stroke="#c8b89a" stroke-width="0.8" rx="2"/>`;
+
+      // Text left-aligned inside box
+      const textX=bx+8;
+      if(isMeth01){
+        let curY=by+4+lineHEN;
+        enLines.forEach((ln,li)=>{s+=`<text x="${textX}" y="${curY+li*lineHEN}" font-size="${fontEN}" fill="#1a1a1a">${ln}</text>`;});
+        curY+=enLines.length*lineHEN+1;
+        viLines.forEach((ln,li)=>{s+=`<text x="${textX}" y="${curY+li*lineHVI}" font-size="${fontVI}" font-style="italic" fill="#6a5a4a">${ln}</text>`;});
+      }else{
+        s+=`<text x="${textX}" y="${py-2}" font-size="${fontEN}" fill="#1a1a1a">${item.en}</text>`;
+        if(item.vi)s+=`<text x="${textX}" y="${py+13}" font-size="${fontVI}" font-style="italic" fill="#6a5a4a">${item.vi}</text>`;
+      }
+    });
+  });
+
+  s+='</svg>';
+  return s;
+}
+
+/* ══════════════════════════════════════
+   CAPA FORM
+══════════════════════════════════════ */
+function renderCapaForm(){
+  const c=document.getElementById('capa-container');
+  c.innerHTML='';
+  CAPA_GROUPS.forEach(g=>{
+    const d=document.createElement('div');
+    d.style.marginBottom='12px';
+    d.innerHTML=`<div class="capa-group-title">${g.title} <em style="font-weight:400;color:#9a8070;font-style:italic"># ${g.title_vi}</em></div>`+
+    g.items.map(it=>{
+      const st=capaState[it.code]||{};
+      return `<div class="capa-item">
+        <div class="capa-item-row">
+          <input type="checkbox" class="capa-item-check" id="cap-${it.code}" ${st.checked?'checked':''} onchange="capaToggle('${it.code}',this.checked)">
+          <label class="capa-item-text" for="cap-${it.code}"><span class="code">[${it.code}]</span>${it.en} # <em>${it.vi}</em></label>
+        </div>
+        <div class="capa-expanded${st.checked?' show':''}" id="capn-${it.code}">
+          <div class="capa-exp-row">
+            <span class="capa-exp-label">Note # Ghi chú</span>
+            <input type="text" placeholder="Notes — Ghi chú" value="${esc(st.note)}" oninput="capaState['${it.code}'].note=this.value">
+            <label class="capa-exp-check"><input type="checkbox" ${st.done?'checked':''} onchange="capaState['${it.code}'].done=this.checked"> ✅ Đã có # Done</label>
+          </div>
+          <div class="capa-exp-row">
+            <span class="capa-exp-label">Bộ phận # Dept</span>
+            <select oninput="capaState['${it.code}'].dept=this.value">
+              <option value="">—</option>
+              ${['QA','QC','PRODUCTION','PLANNING','PURCHASING','ACCOUNTANT','TECHNICAL','R&D','WAREHOUSE','SUPPLIER','OTHER'].map(d=>`<option value="${d}" ${st.dept===d?'selected':''} >${d}</option>`).join('')}
+            </select>
+          </div>
+          <div class="capa-exp-row">
+            <span class="capa-exp-label">Ngày # Date</span>
+            <div class="capa-date-wrap"><span class="capa-date-val" id="cdsp-${it.code}">${st.date?fmtDate(st.date):'—'}</span><label class="capa-date-btn" title="Chọn ngày"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><input type="date" class="capa-date-input" value="${esc(st.date)}" onchange="capaState['${it.code}'].date=this.value;document.getElementById('cdsp-${it.code}').textContent=this.value?fmtDate(this.value):'—'"></label></div>
+            <label class="capa-exp-check"><input type="checkbox" ${st.asap?'checked':''} onchange="capaState['${it.code}'].asap=this.checked"> ⚡ ASAP</label>
+          </div>
+          <div class="capa-exp-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+            <span class="capa-exp-label">Photo # Ảnh</span>
+            <div class="capa-photo-grid">${(()=>{
+              const photos=st.photos||[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}];
+              return photos.map((ph,pi)=>{
+                const area=ph.src
+                  ?`<div class="capa-photo-area"><img src="${ph.src}" alt=""><button class="capa-photo-del" onclick="capaPhotoDel('${it.code}',${pi})">✕</button></div>`
+                  :`<div class="capa-photo-area"><div class="capa-ph-btns"><label class="ph-action-btn" style="width:76px;font-size:9px;padding:4px 6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Camera</span><input type="file" accept="image/*" capture="environment" onchange="capaPhotoLoad('${it.code}',${pi},this)"></label><label class="ph-action-btn" style="width:76px;font-size:9px;padding:4px 6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Gallery</span><input type="file" accept="image/*" onchange="capaPhotoLoad('${it.code}',${pi},this)"></label></div></div>`;
+                return `<div class="capa-photo-slot">${area}<input class="capa-photo-caption" type="text" placeholder="Caption…" value="${esc(ph.caption)}" oninput="capaPhotoCaption('${it.code}',${pi},this.value)"></div>`;
+              }).join('');
+            })()}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    c.appendChild(d);
+  });
+  // Custom free-text CAPA field
+  const customCapaDiv=document.createElement('div');
+  customCapaDiv.style.cssText='margin-top:10px;padding:10px 0 2px;border-top:1px dashed var(--border)';
+  customCapaDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Other Action # <em style="font-style:italic">Hành động khác</em> <em style="font-weight:400;color:#9a8070">— not in list above # không có trong danh sách</em></div>
+<textarea style="width:100%;border:1px solid var(--border);border-radius:4px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional corrective action… # Mô tả hành động bổ sung…" oninput="capaCustom=this.value">${esc(capaCustom)}</textarea>
+<div class="capa-expanded show" style="margin-left:0;margin-top:8px">
+  <div class="capa-exp-row">
+    <span class="capa-exp-label">Note # Ghi chú</span>
+    <input type="text" placeholder="Notes — Ghi chú" value="${esc(capaCustomNote)}" oninput="capaCustomNote=this.value">
+    <label class="capa-exp-check"><input type="checkbox" ${capaCustomDone?'checked':''} onchange="capaCustomDone=this.checked"> ✅ Đã có # Done</label>
+  </div>
+  <div class="capa-exp-row">
+    <span class="capa-exp-label">Bộ phận # Dept</span>
+    <select oninput="capaCustomDept=this.value">
+      <option value="">—</option>
+      ${['QA','QC','PRODUCTION','PLANNING','PURCHASING','ACCOUNTANT','TECHNICAL','R&D','WAREHOUSE','SUPPLIER','OTHER'].map(d=>`<option value="${d}" ${capaCustomDept===d?'selected':''} >${d}</option>`).join('')}
+    </select>
+  </div>
+  <div class="capa-exp-row">
+    <span class="capa-exp-label">Ngày # Date</span>
+    <div class="capa-date-wrap"><span class="capa-date-val" id="cdsp-custom">${capaCustomDate?fmtDate(capaCustomDate):'—'}</span><label class="capa-date-btn" title="Chọn ngày"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><input type="date" class="capa-date-input" value="${esc(capaCustomDate)}" onchange="capaCustomDate=this.value;document.getElementById('cdsp-custom').textContent=this.value?fmtDate(this.value):'—'"></label></div>
+    <label class="capa-exp-check"><input type="checkbox" ${capaCustomAsap?'checked':''} onchange="capaCustomAsap=this.checked"> ⚡ ASAP</label>
+  </div>
+</div>`;
+  c.appendChild(customCapaDiv);
+}
+
+/* ── CAPA PHOTOS ── */
+function capaPhotoLoad(code,pi,input){
+  const file=input.files[0];
+  if(!file)return;
+  const st=capaState[code];
+  if(!st)return;
+  if(!st.photos)st.photos=[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}];
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=1400;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      st.photos[pi].src=cv.toDataURL('image/jpeg',0.82);
+      renderCapaForm();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function capaPhotoCaption(code,pi,val){
+  const st=capaState[code];
+  if(st&&st.photos)st.photos[pi].caption=val;
+}
+function capaPhotoDel(code,pi){
+  const st=capaState[code];
+  if(st&&st.photos){st.photos[pi]={src:'',caption:''};renderCapaForm();}
+}
+
+function capaToggle(code,checked){
+  if(!capaState[code])capaState[code]={checked:false,note:'',done:false,dept:'',date:'',asap:false,photos:[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}]};
+  capaState[code].checked=checked;
+  const n=document.getElementById('capn-'+code);
+  if(n)n.classList.toggle('show',checked);
+}
+
+/* ══════════════════════════════════════
+   PREVIEW
+══════════════════════════════════════ */
+function alignInfoTables(){
+  document.querySelectorAll('.page').forEach(function(page){
+    var table=page.querySelector('.slide-info-table');
+    var grid=page.querySelector('.photos-grid');
+    if(!table||!grid)return;
+    var W=(grid.offsetWidth-20)/3;
+    var cols=table.querySelectorAll('col');
+    if(cols.length>=5){
+      cols[0].style.width=Math.round(W+5)+'px';
+      cols[1].style.width=Math.round(W/2+5)+'px';
+      cols[2].style.width=Math.round(W/2+5)+'px';
+      cols[3].style.width=Math.round(W/2+5)+'px';
+      cols[4].style.width='';
+    }
+  });
+}
+function openPreview(){
+  // Validate: mỗi CAPA item đã tick phải có Dept và (Date hoặc ASAP)
+  const missing=[];
+  CAPA_GROUPS.forEach(g=>{
+    g.items.forEach(it=>{
+      const st=capaState[it.code];
+      if(!st||!st.checked)return;
+      const hasDate=st.asap||(st.date&&st.date.trim());
+      const hasDept=st.dept&&st.dept.trim();
+      if(!hasDept||!hasDate){
+        const label=it.en.length>40?it.en.slice(0,40)+'…':it.en;
+        const missing_parts=[];
+        if(!hasDept)missing_parts.push('Dept');
+        if(!hasDate)missing_parts.push('Date');
+        missing.push(`• ${label} → thiếu ${missing_parts.join(' & ')}`);
+      }
+    });
+  });
+  if(missing.length){
+    toast('⚠️ Vui lòng điền đủ Dept & Date cho các CAPA đã chọn:\n'+missing.join('\n'));
+    // Chuyển sang tab CAPA để user điền
+    const capaBtn=document.querySelector('.tab-btn[data-tab="capa"]');
+    if(capaBtn)switchTab(capaBtn,'capa');
+    return;
+  }
+  document.getElementById('print-pages').innerHTML=buildPages();
+  document.getElementById('preview-title-bar').textContent=getFileName();
+  document.getElementById('preview-overlay').classList.add('open');
+  alignInfoTables();
+}
+function closePreview(){document.getElementById('preview-overlay').classList.remove('open');}
+window.addEventListener('beforeprint',alignInfoTables);
+
+function buildPages(){
+  const date=(document.getElementById('hdr-date').value||todayStr());
+  const dateDisp=fmtDate(date);
+  const no=getReportNo();
+  const fname=getFileName();
+  const product=document.getElementById('hdr-product').value||'—';
+  const piwo=document.getElementById('hdr-piwo').value||'—';
+  const qtyInsp=document.getElementById('hdr-qty-insp').value||'—';
+  const qtyDef=document.getElementById('hdr-qty-def').value||'—';
+  const customer=document.getElementById('hdr-customer').value||'—';
+  const reporter=document.getElementById('hdr-reporter').value||'—';
+  const dept=getDept();
+  const desc=document.getElementById('hdr-desc').value||'—';
+  const sev=severity||'—';
+  let pg='';
+
+  /* Page 1: Cover */
+  if(printToggles.summary) pg+=`<div class="page">${pgHdr(fname,1,dateDisp,no)}
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px">
+      <div style="text-align:center">
+        <div style="font-size:48px;font-weight:900;color:#3c2a1a;letter-spacing:4px;line-height:1.1">QUALITY REPORT</div>
+      </div>
+      <table class="meta-table" style="width:100%">
+        <tr><td>Report No. <em># Số báo cáo</em></td><td>${no}</td><td>Date <em># Ngày</em></td><td>${dateDisp}</td></tr>
+        <tr><td>Product <em># Sản phẩm</em></td><td>${product}</td><td>PI / WO <em># Đơn hàng</em></td><td>${piwo}</td></tr>
+        <tr><td>Customer / Brand <em># Khách hàng</em></td><td>${customer}</td><td>Severity <em># Mức độ</em></td><td><strong style="text-transform:uppercase;color:${sev==='Critical'?'#d32f2f':sev==='Major'?'#e65100':'#1a1a1a'}">${sev}</strong></td></tr>
+        <tr><td>Reported By <em># Người báo cáo</em></td><td>${reporter}</td><td>Department <em># Bộ phận</em></td><td>${dept}</td></tr>
+        <tr><td>Inspected Qty <em># SL Kiểm tra</em></td><td>${qtyInsp}</td><td>Defect Qty <em># SL Lỗi</em></td><td>${qtyDef}</td></tr>
+        <tr><td>Description <em># Mô tả</em></td><td colspan="3" style="white-space:pre-wrap">${desc}</td></tr>
+
+      </table>
+    </div>
+    ${pgFtr(1,fname)}</div>`;
+
+  /* Product Summary Page */
+  if(printToggles.products && productList.some(p=>p.code||p.name)){
+    const prodPg=2;
+    // Build summary: for each product, sum fail qty from slides
+    const rows=productList.filter(p=>p.code||p.name).map(p=>{
+      const pSlides=slides.filter(s=>s.productRef===p.id);
+      const failQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyDef)||0),0);
+      const totalQty=parseInt(p.qty)||0;
+      const rate=totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—';
+      const rateColor=totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
+      return {p,failQty,totalQty,rate,rateColor};
+    });
+    const grandTotal=rows.reduce((a,r)=>a+(r.totalQty||0),0);
+    const grandFail=rows.reduce((a,r)=>a+r.failQty,0);
+    const grandRate=grandTotal>0?(grandFail/grandTotal*100).toFixed(1)+'%':'—';
+    pg+=`<div class="page">${pgHdr(fname,prodPg,dateDisp,no)}
+      <div class="rc-print-title" style="margin-bottom:4px">PRODUCT INSPECTION SUMMARY <em style="font-weight:400;font-style:italic"># TỔNG HỢP KIỂM TRA SẢN PHẨM</em></div>
+      <div style="font-size:13px;color:#7a6050;font-style:italic;margin-bottom:10px">Report No. ${no} — ${dateDisp}</div>
+      <table class="prod-sum-table">
+        <thead>
+          <tr>
+            <th class="num">#</th>
+            <th>Product Code<br><em style="font-weight:400;font-style:italic"># Mã SP</em></th>
+            <th>Product Name<br><em style="font-weight:400;font-style:italic"># Tên SP</em></th>
+            <th>PI / WO<br><em style="font-weight:400;font-style:italic"># Đơn hàng</em></th>
+            <th style="text-align:center">Total Qty<br><em style="font-weight:400;font-style:italic"># SL Kiểm</em></th>
+            <th style="text-align:center">Fail Qty<br><em style="font-weight:400;font-style:italic"># SL Lỗi</em></th>
+            <th style="text-align:center">Fail Rate<br><em style="font-weight:400;font-style:italic"># Tỉ lệ lỗi</em></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r,i)=>`<tr>
+            <td class="num">${i+1}</td>
+            <td class="code-cell">${r.p.code||'—'}</td>
+            <td>${r.p.name||'—'}</td>
+            <td>${r.p.order||'—'}</td>
+            <td style="text-align:center;font-weight:700">${r.totalQty||'—'}</td>
+            <td class="fail-cell">${r.failQty}</td>
+            <td class="rate-cell" style="color:${r.rateColor}">${r.rate}</td>
+          </tr>`).join('')}
+          <tr class="total-row">
+            <td colspan="4" style="text-align:right;padding-right:12px">TOTAL <em style="font-weight:400;font-style:italic"># Tổng</em></td>
+            <td style="text-align:center">${grandTotal||'—'}</td>
+            <td class="fail-cell">${grandFail}</td>
+            <td class="rate-cell" style="color:${grandTotal>0?(grandFail/grandTotal>0.1?'#c0392b':grandFail>0?'#e67e22':'#1a7342'):'#555'}">${grandRate}</td>
+          </tr>
+        </tbody>
+      </table>
+      ${pgFtr(prodPg,fname)}</div>`;
+  }
+
+  /* Issue Pages */
+  const slidePageOffset = (printToggles.products && productList.some(p=>p.code||p.name)) ? 1 : 0;
+  slides.forEach((slide,si)=>{
+    const wcLbl=slide.wc==='Other'?(slide.wcOther||'Other'):(slide.wc||'—');
+    const sdDate=fmtDate(slide.date||date);
+    const pn=si+2+slidePageOffset;
+    // Product label: CODE — NAME if from list, else free text
+    let productLabel='—';
+    if(slide.productRef){
+      const p=productList.find(p=>p.id===slide.productRef);
+      if(p)productLabel=[p.code,p.name].filter(Boolean).join(' — ');
+    } else if(slide.productName){
+      productLabel=slide.productName;
+    }
+    pg+=`<div class="page">${pgHdr(fname,pn,dateDisp,no)}
+      <div class="issue-slide-header">ISSUE — SLIDE ${si+1} <em style="font-weight:400;font-style:italic"># ẢNH LỖI — TRANG ${si+1}</em></div>
+      <table class="slide-info-table">
+        <colgroup>
+          <col style="width:calc((100% - 20px) / 3 + 5px)">
+          <col style="width:calc((100% - 20px) / 6 + 5px)">
+          <col style="width:calc((100% - 20px) / 6 + 5px)">
+          <col style="width:calc((100% - 20px) / 6 + 5px)">
+          <col>
+        </colgroup>
+        <tr>
+          <td class="sit-label">Product <em># Sản phẩm</em></td>
+          <td class="sit-label">Work Center <em># Công đoạn</em></td>
+          <td class="sit-label">Issue Date <em># Ngày phát sinh</em></td>
+          <td class="sit-label">Inspected Qty <em># SL Kiểm</em></td>
+          <td class="sit-label">Defect Qty <em># SL Lỗi</em></td>
+        </tr>
+        <tr>
+          <td class="sit-value">${productLabel}</td>
+          <td class="sit-value">${wcLbl}</td>
+          <td class="sit-value">${sdDate}</td>
+          <td class="sit-value">${slide.qtyInsp||'—'} pcs</td>
+          <td class="sit-value">${slide.qtyDef||'—'} pcs</td>
+        </tr>
+      </table>
+      <div class="photos-grid">
+        ${slide.slots.map(slot=>{
+          const catDisp=slot.cat?catDisplay(slot.cat,true):'';
+          const typeDisp=slot.type&&slot.cat&&TAXONOMY[slot.cat]?.[slot.type]
+            ?typeDisplay(TAXONOMY[slot.cat][slot.type],true):'';
+          return `<div class="photo-print">
+            ${slot.src?`<img src="${slot.src}" alt="">`:`<div class="no-photo"></div>`}
+            ${slot.cat?`<div class="print-cat">${catDisp}</div>`:''}
+            ${slot.type?`<div class="print-type">${typeDisp}</div>`:''}
+            ${slot.caption?`<div class="print-caption">${slot.caption}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      ${pgFtr(pn,fname)}</div>`;
+  });
+
+  /* Root Cause Page 1: Fishbone */
+  const rcPg=slides.length+2+slidePageOffset;
+  const rcPg2=slides.length+3+slidePageOffset;
+  const rcChecked={};
+  Object.keys(RC_DATA).forEach(k=>{
+    const items=RC_DATA[k].items;
+    const ch=(rcState[k]||[]).map((st,i)=>({...items[i],...st})).filter(i=>i.checked);
+    if(ch.length)rcChecked[k]=ch;
+  });
+  const hasRC=Object.keys(rcChecked).length>0;
+
+  if(printToggles.fishbone)   pg+=`<div class="page">${pgHdr(fname,rcPg,dateDisp,no)}
+    <div class="rc-print-title">ROOT CAUSE ANALYSIS — 5M1E <em style="font-weight:400;font-style:italic"># PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ</em></div>
+    <div style="font-size:14px;font-style:italic;color:#7a6050;margin-bottom:6px">Fishbone Diagram # BIỂU ĐỒ XƯƠNG CÁ</div>
+    <div class="fishbone-print" style="margin:6px 0 0;text-align:center">${buildFishboneSVG(true)}</div>
+    ${pgFtr(rcPg,fname)}</div>`;
+
+  /* Root Cause Page 2: RC List */
+  const rcListHtml=hasRC?`<div class="rc-print-list">${(()=>{let rcIdx=0;return Object.entries(rcChecked).map(([k,items])=>`<div class="rc-print-cat"><div class="rc-print-cat-title">${RC_DATA[k].label_en} # <em style="font-weight:400;font-style:italic">${RC_DATA[k].label_vi}</em></div>${items.map(it=>{const idx=++rcIdx;return `<div class="rc-print-item" style="margin-bottom:6px;flex-direction:column;align-items:flex-start"><span class="rc-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${it.note?`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${it.note}</div>`:''}</div>`;}).join('')}</div>`).join('');})()}</div>`:'';
+  if(printToggles.rclist)   pg+=`<div class="page">${pgHdr(fname,rcPg2,dateDisp,no)}
+    <div class="rc-print-title">ROOT CAUSE LIST — 5M1E <em style="font-weight:400;font-style:italic"># DANH SÁCH NGUYÊN NHÂN GỐC RỄ</em></div>
+    ${!hasRC?`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">No root cause selected # Chưa chọn nguyên nhân</div>`:rcListHtml}
+    ${rcCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Root Cause # Nguyên nhân khác</div><div style="font-size:13px;white-space:pre-wrap">${rcCustom}</div></div>`:''}
+    ${pgFtr(rcPg2,fname)}</div>`;
+
+  /* CAPA Page */
+  const capaPg=slides.length+4+slidePageOffset;
+  const capaChecked={};
+  CAPA_GROUPS.forEach(g=>{
+    const items=g.items.filter(it=>capaState[it.code]?.checked);
+    if(items.length)capaChecked[g.title]={title_vi:g.title_vi,items};
+  });
+  const hasCapa=Object.keys(capaChecked).length>0;
+  const capaNotes=(document.getElementById('capa-notes')||{}).value||'';
+
+  if(printToggles.capa)   pg+=`<div class="page">${pgHdr(fname,capaPg,dateDisp,no)}
+    <div class="capa-print-title">CORRECTIVE &amp; PREVENTIVE ACTIONS <em style="font-weight:400;font-style:italic"># HÀNH ĐỘNG KHẮC PHỤC &amp; PHÒNG NGỪA</em></div>
+    ${hasCapa?`<div>
+      ${(()=>{let capaIdx=0;return Object.entries(capaChecked).map(([t,g])=>`<div class="capa-print-group">
+        <div class="capa-print-group-title">${t} # <em style="font-weight:400;font-style:italic">${g.title_vi}</em></div>
+        ${g.items.map(it=>{const idx=++capaIdx;const st=capaState[it.code]||{};const metaLines=[];if(st.note||st.done)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${st.done?'✅ Done # Đã có':''}${(st.done&&st.note)?' — ':''}${st.note||''}</div>`);if(st.dept)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${st.dept}</strong></div>`);if(st.date||st.asap)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(st.date)}${st.asap?' ⚡ASAP':''}</strong></div>`);const photos=(st.photos||[]).filter(ph=>ph.src);const photoHtml=photos.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;margin-left:18px">${photos.map(ph=>`<div style="display:flex;flex-direction:column;gap:0"><img src="${ph.src}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px;border:1px solid #d0c0a0">${ph.caption?`<div style="font-size:13px;color:#1a1a1a;margin-top:5px;text-align:justify">${ph.caption}</div>`:''}</div>`).join('')}</div>`:'';return `<div class="capa-print-item" style="flex-direction:column;align-items:flex-start;margin-bottom:8px"><span class="capa-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${metaLines.join('')}${photoHtml}</div>`;}).join('')}
+      </div>`).join('');})()}
+    </div>`:`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">No action selected # Chưa chọn hành động</div>`}
+    ${capaCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Action # Hành động khác</div><div style="font-size:13px;white-space:pre-wrap">${capaCustom}</div>${(()=>{const ml=[];if(capaCustomNote||capaCustomDone)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px;text-align:justify">${capaCustomDone?'✅ Done # Đã có':''}${(capaCustomDone&&capaCustomNote)?' — ':''}${capaCustomNote||''}</div>`);if(capaCustomDept)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${capaCustomDept}</strong></div>`);if(capaCustomDate||capaCustomAsap)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(capaCustomDate)}${capaCustomAsap?' ⚡ASAP':''}</strong></div>`);return ml.join('');})()}</div>`:''}
+    ${capaNotes?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:9px;font-weight:bold;color:#5c4a32;margin-bottom:4px">NOTES # GHI CHÚ</div><div style="font-size:9px;white-space:pre-wrap">${capaNotes}</div></div>`:''}
+    <div style="margin-top:16px;border-top:1px solid #e0d0b0;padding-top:10px;display:flex;justify-content:flex-end">
+      <div style="width:300px">
+        <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#3c2a1a;margin-bottom:6px;white-space:nowrap">Reported By <em style="font-weight:400;font-style:italic;color:#7a6050"># Người lập báo cáo</em></div>
+        <div style="border-bottom:1px solid #888;height:40px;margin-bottom:6px"></div>
+        <div style="font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px">${reporter}</div>
+      </div>
+    </div>
+    ${pgFtr(capaPg,fname)}</div>`;
+
+  return pg;
+}
+
+function pgHdr(fname,pn,dateDisp,no){
+  return `<div class="pg-header">
+    <div><div class="pg-logo">Boka</div></div>
+    <div class="pg-doc-info"><div class="doc-no">No. ${no}</div><div>Date: ${dateDisp}</div><div>Page ${pn}</div></div>
+  </div>`;
+}
+
+function pgFtr(pn,fname){
+  return `<div style="flex:1"></div><div class="pg-footer"><span>${fname}</span><span>Page ${pn}</span></div>`;
+}
+
+/* ══════════════════════════════════════
+   SAVE (File System Access API)
+══════════════════════════════════════ */
+async function saveReport(){
+  if(!window.showDirectoryPicker){
+    toast('⚠️ File saving requires Chrome or Edge.\nVui lòng dùng Chrome / Edge để lưu file.');
+    return;
+  }
+  // Try to reuse saved folder handle (IndexedDB)
+  let dir=null;
+  const saved=await dbGet('saveDir');
+  if(saved){
+    try{const perm=await saved.requestPermission({mode:'readwrite'});if(perm==='granted')dir=saved;}catch(_){}
+  }
+  if(!dir){
+    try{dir=await window.showDirectoryPicker({mode:'readwrite'});await dbSet('saveDir',dir);}
+    catch(e){if(e.name!=='AbortError')toast('❌ Error: '+e.message);return;}
+  }
+  try{
+    const fname=getFileName();
+    toast('💾 Saving… # Đang lưu…');
+
+    // 1. Collect full state
+    const state=collectState();
+    const stateJson=JSON.stringify(state);
+
+    // 2. Inject state into the embedded script tag
+    const stateEl=document.getElementById('__boka_saved_state__');
+    stateEl.textContent=stateJson;
+
+    // 3. Temporarily clear dynamic containers so outerHTML stays lean
+    const ids=['slides-container','rc-accordion','capa-container','fishbone-live','print-pages'];
+    ids.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+    // Also hide the resume modal in case it's open
+    document.getElementById('resume-modal').style.display='none';
+
+    // 4. Capture clean app HTML (state JSON embedded, containers empty)
+    const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+
+    // 5. Reset state tag to null (this file stays fresh)
+    stateEl.textContent='null';
+
+    // 6. Re-render all dynamic content (restore working app)
+    renderSlides();
+    renderRCForm();
+    renderCapaForm();
+    renderFishbone();
+
+    // 7. Write the saved file
+    const fh=await dir.getFileHandle(fname,{create:true});
+    const fw=await fh.createWritable();
+    await fw.write(html);
+    await fw.close();
+
+    // 7b. Write companion JSON state file (for local history reload)
+    const jsonFname=fname.replace(/\.html$/,'.json');
+    const jfh=await dir.getFileHandle(jsonFname,{create:true});
+    const jfw=await jfh.createWritable();
+    await jfw.write(stateJson);
+    await jfw.close();
+
+    // 7c. Keep global handle + update local index manifest
+    _localDirHandle=dir;
+    const _hdr=state.hdr||{};
+    await updateLocalIndex(dir,{
+      htmlfile:fname,jsonfile:jsonFname,
+      no:_hdr.no||getReportNo(),product:_hdr.product||'',
+      customer:_hdr.customer||'',piwo:_hdr.piwo||'',
+      date:_hdr.date||todayStr(),severity:state.severity||'',
+      savedAt:new Date().toISOString(),source:'local'
+    });
+    document.getElementById('btn-local-history').style.display='';
+
+    // 8. Update CSV log
+    await writeLog(dir,fname);
+
+    toast(`✅ Saved!\n${fname}\n↩ Open in Chrome to resume editing\n/ Mở lại trong Chrome để tiếp tục`);
+  }catch(e){
+    if(e.name!=='AbortError')toast('❌ Error: '+e.message);
+  }
+}
+
+function buildSavedHTML(){
+  const fname=getFileName();
+  const pages=buildPages();
+  return`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>${fname}</title>
+
+
+<style>
+body{font-family:sans-serif;background:#d8cfc0;margin:0;padding:20px}
+.page{background:#fff;width:1050px;min-height:740px;padding:22px 28px;font-family:sans-serif;font-size:17px;color:#1a1a1a;page-break-after:always;margin:0 auto 20px;box-shadow:0 4px 24px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.pg-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #3c2a1a;padding-bottom:8px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid}
+.pg-logo{font-size:33px;font-weight:normal;color:#3c2a1a;letter-spacing:2px;font-family:'Courier New',Courier,monospace}
+.pg-doc-info{text-align:right;font-size:14px;color:#555}.pg-doc-info .doc-no{font-size:21px;font-weight:900;color:#3c2a1a}
+.meta-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.meta-table td{border:1px solid #c0a878;padding:5px 8px;font-size:15px}
+.meta-table td:first-child{background:#f5ede0;font-weight:700;width:1%;white-space:nowrap;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#5c4a32}
+.meta-table td:nth-child(3){background:#f5ede0;font-weight:700;width:1%;white-space:nowrap;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#5c4a32}
+.meta-table td:nth-child(2){text-transform:uppercase}
+.meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
+.meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
+.issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:4px 7px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:9px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:13px;font-weight:700;color:#c0392b;text-transform:uppercase}.slide-info-table td:first-child{width:calc((100% - 20px) / 3 + 5px)}.slide-info-table td:nth-child(2),.slide-info-table td:nth-child(3),.slide-info-table td:nth-child(4){width:calc((100% - 20px) / 6 + 5px)}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
+.photo-print{display:flex;flex-direction:column;gap:4px}
+.photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
+.no-photo{width:100%;aspect-ratio:4/3;background:#eee;display:flex;align-items:center;justify-content:center;font-size:14px;color:#999;border:1px solid #ddd}
+.print-cat{font-size:13px;font-weight:900;color:#1a5276;min-height:2.6em}
+.print-cat em{font-weight:400;font-style:italic;color:#4a7aaa;text-transform:uppercase}
+.print-type{font-size:13px;font-weight:700;color:#c0392b;margin-top:1px;min-height:2.6em}
+.print-type em{font-weight:400;font-style:italic;color:#c06040}
+.print-caption{font-size:13px;color:#1a1a1a;margin-top:2px;text-align:justify}
+.rc-print-title,.capa-print-title{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px}
+.fishbone-print{margin:8px 0;border:1px solid #c0a878;border-radius:4px;overflow:visible;background:#fdfaf5}
+.rc-print-list{margin-top:10px}
+.rc-print-cat{margin-bottom:14px}
+.rc-print-cat-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.rc-print-cat-title em{font-style:italic;color:#4a7aaa;font-weight:400}
+.rc-print-item,.capa-print-item{display:flex;gap:6px;font-size:14px;padding:3px 0}
+.rc-print-code,.capa-print-code{color:#b8860b;font-weight:900;min-width:60px;flex-shrink:0}
+.rc-print-text,.capa-print-text{color:#1a1a1a}
+.rc-print-text em,.capa-print-text em{font-style:italic;color:#555}
+.rc-print-note,.capa-print-note{color:#555;font-style:italic}
+.capa-print-group{margin-bottom:14px}
+.capa-print-group-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.capa-print-group-title em{font-style:italic;color:#4a7aaa;font-weight:400}
+.sign-label{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#3c2a1a;margin-bottom:6px}
+.sign-label em{font-weight:400;font-style:italic;color:#7a6050}
+.sign-line{border-bottom:1px solid #888;height:40px;margin-bottom:6px}
+.sign-name{font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.pg-footer{margin-top:auto;border-top:1px solid #e0d0b0;padding-top:5px;display:flex;justify-content:space-between;font-size:12px;color:#999}
+.prod-sum-table{width:100%;border-collapse:collapse;margin-top:10px}
+.prod-sum-table th{background:#3c2a1a;color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border:1px solid #c0a878;text-align:left}
+.prod-sum-table td{border:1px solid #c0a878;padding:5px 8px;font-size:13px;vertical-align:middle}
+.prod-sum-table tr:nth-child(even) td{background:#fdf9f3}
+.prod-sum-table .num{text-align:center;color:#9a8070;font-size:11px}
+.prod-sum-table .code-cell{font-weight:700;color:#1a5276;white-space:nowrap}
+.prod-sum-table .fail-cell{font-weight:700;color:#c0392b;text-align:center}
+.prod-sum-table .rate-cell{font-weight:700;text-align:center}
+.prod-sum-table .total-row td{background:#f5ede0;font-weight:700;border-top:2px solid #c0a878}
+@page{size:297mm 210mm;margin:10mm 12mm;}
+@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff!important}.page{break-after:page;page-break-after:always;box-shadow:none!important;margin:0!important;width:100%!important;min-height:190mm!important}.fishbone-print{flex:none!important}}
+</style></head><body>${pages}
+<div id="cam-modal">
+  <div id="cam-wrap">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-canvas"></canvas>
+    <img id="cam-preview" alt="preview">
+    <div class="cam-ctrl" id="cam-ctrl-live">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-close" onclick="closeCamera()" title="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <span class="cam-label">Đóng</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-capture" onclick="capturePhoto()" title="Chụp ảnh"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+        <span class="cam-label">Chụp</span>
+      </div>
+    </div>
+    <div class="cam-ctrl" id="cam-ctrl-confirm" style="display:none">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-retake" onclick="retakePhoto()" title="Chụp lại"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></button>
+        <span class="cam-label">Chụp lại</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-confirm" onclick="confirmPhoto()" title="Lấy ảnh này"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <span class="cam-label">Lấy ảnh</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+async function writeLog(dir,fname){
+  const date=(document.getElementById('hdr-date').value||todayStr());
+  const no=getReportNo();
+  const product=(document.getElementById('hdr-product').value||'').replace(/,/g,';');
+  const dept=getDept();
+  const qtyInsp=document.getElementById('hdr-qty-insp').value||'';
+  const qtyDef=document.getElementById('hdr-qty-def').value||'';
+  const customer=(document.getElementById('hdr-customer').value||'').replace(/,/g,';');
+  const sev=severity||'';
+  const wcs=[...new Set(slides.map(s=>s.wc==='Other'?(s.wcOther||'Other'):s.wc).filter(Boolean))].join('|');
+
+  const rcCodes=[],rcDetail={};
+  Object.keys(RC_DATA).forEach(k=>{
+    const ch=(rcState[k]||[]).filter(i=>i.checked);
+    ch.forEach(i=>rcCodes.push(i.code));
+    if(ch.length)rcDetail[k]=ch.map(i=>({code:i.code,note:i.note}));
+  });
+
+  const capaCodes=[],capaDetail=[];
+  CAPA_GROUPS.forEach(g=>g.items.forEach(it=>{
+    const st=capaState[it.code];
+    if(st?.checked){capaCodes.push(it.code);capaDetail.push({code:it.code,note:st.note});}
+  }));
+
+  const rcMan=(rcState.man||[]).filter(i=>i.checked).length;
+  const rcMach=(rcState.machine||[]).filter(i=>i.checked).length;
+  const rcMat=(rcState.material||[]).filter(i=>i.checked).length;
+  const rcMeth=(rcState.method||[]).filter(i=>i.checked).length;
+  const rcMeas=(rcState.measurement||[]).filter(i=>i.checked).length;
+  const rcEnv=(rcState.env||[]).filter(i=>i.checked).length;
+
+  const savedAt=new Date().toISOString();
+  const rcJ=JSON.stringify(rcDetail).replace(/"/g,'""');
+  const capaJ=JSON.stringify(capaDetail).replace(/"/g,'""');
+
+  const row=[no,date,`"${product}"`,qtyInsp,qtyDef,sev,`"${wcs}"`,
+    rcMan,rcMach,rcMat,rcMeth,rcMeas,rcEnv,
+    `"${rcCodes.join('|')}"`,`"${capaCodes.join('|')}"`,
+    `"${fname}"`,savedAt,`"${rcJ}"`,`"${capaJ}"`].join(',');
+
+  const hdr='report_no,date,product,qty_inspected,qty_defect,severity,wc_stages,rc_man,rc_machine,rc_material,rc_method,rc_measurement,rc_environment,rc_codes,capa_codes,file_name,saved_at,rc_detail_json,capa_detail_json\n';
+  const logName='quality_report_log.csv';
+  let existing=hdr;
+  try{
+    const lf=await dir.getFileHandle(logName);
+    const file=await lf.getFile();
+    const txt=await file.text();
+    if(txt.trim())existing=txt;
+  }catch(_){}
+
+  const content=existing.trimEnd()+'\n'+row+'\n';
+  const lh=await dir.getFileHandle(logName,{create:true});
+  const lw=await lh.createWritable();
+  await lw.write(content);
+  await lw.close();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),4500);
+}
+
+/* charts removed */
+
+/* ══════════════════════════════════════
+   SAVE STATE — collect / restore
+══════════════════════════════════════ */
+function collectState(){
+  return {
+    v:1,
+    savedAt:new Date().toISOString(),
+    hdr:{
+      date:document.getElementById('hdr-date').value,
+      no:document.getElementById('hdr-no').value,
+      product:document.getElementById('hdr-product').value,
+      piwo:document.getElementById('hdr-piwo').value,
+      qtyInsp:document.getElementById('hdr-qty-insp').value,
+      qtyDef:document.getElementById('hdr-qty-def').value,
+      customer:document.getElementById('hdr-customer').value,
+      reporter:document.getElementById('hdr-reporter').value,
+      dept:document.getElementById('hdr-dept').value,
+      deptOther:document.getElementById('hdr-dept-other').value,
+      desc:document.getElementById('hdr-desc').value
+    },
+    severity,
+    slides:JSON.parse(JSON.stringify(slides)),
+    slideIdCounter,
+    rcState:JSON.parse(JSON.stringify(rcState)),
+    rcCustom,
+    capaState:JSON.parse(JSON.stringify(capaState)),
+    capaCustom,
+    capaCustomNote,
+    capaCustomDone,
+    capaCustomDept,
+    capaCustomDate,
+    capaCustomAsap,
+    printToggles:{...printToggles},
+    capaNotes:(document.getElementById('capa-notes')||{}).value||'',
+    productList:JSON.parse(JSON.stringify(productList)),
+    productIdCounter,
+    cloudId:currentCloudId
+  };
+}
+
+let _pendingState=null;
+
+function showResumeDialog(st){
+  _pendingState=st;
+  const d=new Date(st.savedAt);
+  const _mn=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const ds=`${String(d.getDate()).padStart(2,'0')}-${_mn[d.getMonth()]}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const product=st.hdr?.product||'—';
+  const no=st.hdr?.no||'—';
+  const nSlides=st.slides?.length||0;
+  const nRC=Object.values(st.rcState||{}).flat().filter(i=>i.checked).length;
+  const nCapa=Object.values(st.capaState||{}).filter(i=>i.checked).length;
+  document.getElementById('resume-meta').innerHTML=
+    `<strong>Report No. ${no} — ${product}</strong>`+
+    `<span style="color:#9a8070;font-size:12px">Saved # Lưu lúc: ${ds}</span>`+
+    `<span style="margin-top:4px;font-size:12px;color:#5c4a32">${nSlides} slide${nSlides!==1?'s':''} · ${nRC} root cause${nRC!==1?'s':''} · ${nCapa} CAPA action${nCapa!==1?'s':''}</span>`;
+  document.getElementById('resume-modal').style.display='flex';
+}
+
+function resumeFromState(){
+  document.getElementById('resume-modal').style.display='none';
+  restoreState(_pendingState);
+  _pendingState=null;
+  toast('📂 Report restored — continue editing!\n/ Đã khôi phục — tiếp tục chỉnh sửa!');
+}
+
+function startFresh(){
+  document.getElementById('resume-modal').style.display='none';
+  _pendingState=null;
+  _doInit();
+}
+
+function restoreState(st){
+  if(!st)return;
+  // Header fields
+  const h=st.hdr||{};
+  document.getElementById('hdr-date').value=h.date||todayStr();
+  document.getElementById('hdr-no').value=h.no||'001';
+  document.getElementById('hdr-product').value=h.product||'';
+  document.getElementById('hdr-piwo').value=h.piwo||'';
+  document.getElementById('hdr-qty-insp').value=h.qtyInsp||'';
+  document.getElementById('hdr-qty-def').value=h.qtyDef||'';
+  document.getElementById('hdr-customer').value=h.customer||'';
+  document.getElementById('hdr-reporter').value=h.reporter||'';
+  document.getElementById('hdr-dept').value=h.dept||'';
+  document.getElementById('hdr-dept-other').value=h.deptOther||'';
+  deptSelChange();
+  document.getElementById('hdr-desc').value=h.desc||'';
+  // Severity
+  severity=st.severity||'';
+  document.querySelectorAll('.sev-btn').forEach(b=>b.classList.toggle('active',b.dataset.sev===severity));
+  // Slides
+  slides=st.slides||[];
+  slideIdCounter=st.slideIdCounter||(slides.length+1);
+  renderSlides();
+  // RC
+  rcState=st.rcState||{};
+  rcCustom=st.rcCustom||'';
+  renderRCForm();
+  renderFishbone();
+  // CAPA
+  capaState=st.capaState||{};
+  // Backfill photos array for older saved states
+  Object.values(capaState).forEach(cs=>{if(!cs.photos)cs.photos=[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}];});
+  capaCustom=st.capaCustom||'';
+  capaCustomNote=st.capaCustomNote||'';
+  capaCustomDone=!!st.capaCustomDone;
+  capaCustomDept=st.capaCustomDept||'';
+  capaCustomDate=st.capaCustomDate||'';
+  capaCustomAsap=!!st.capaCustomAsap;
+  renderCapaForm();
+  // Product list
+  productList=st.productList||[];
+  productIdCounter=st.productIdCounter||(productList.length+1);
+  renderProductList();
+  // Print toggles
+  const pt=st.printToggles||{};
+  ['summary','products','fishbone','rclist','capa'].forEach(k=>{
+    const el=document.getElementById('ptog-'+k);
+    if(el)el.checked=pt[k]!==false;
+  });
+  updatePrintToggles();
+  // CAPA notes
+  const cn=document.getElementById('capa-notes');
+  if(cn)cn.value=st.capaNotes||'';
+  // Cloud ID
+  currentCloudId=st.cloudId||null;
+}
+
+/* ══════════════════════════════════════
+   CLOUD — Apps Script integration
+══════════════════════════════════════ */
+
+function applySettings(){
+  const mode=getSaveMode();
+  const hasCloud=!!getScriptUrl();
+  const showCloud=hasCloud&&(mode==='both'||mode==='cloud');
+  const showLocal=(mode==='both'||mode==='local');
+  document.getElementById('btn-cloud-save').style.display=showCloud?'':'none';
+  document.getElementById('btn-cloud-list').style.display=showCloud?'':'none';
+  document.getElementById('btn-export-html').style.display=showLocal?'':'none';
+  // Export HTML: secondary/smaller style when cloud also visible
+  const expBtn=document.getElementById('btn-export-html');
+  if(expBtn){
+    if(showCloud&&showLocal){expBtn.className='btn btn-secondary';expBtn.style.fontSize='12px';}
+    else{expBtn.className='btn btn-save';expBtn.style.fontSize='';}
+  }
+}
+async function refreshLocalHistoryBtn(){
+  const handle=await dbGet('saveDir');
+  const btn=document.getElementById('btn-local-history');
+  if(btn)btn.style.display=handle?'':'none';
+}
+function initCloud(){applySettings();refreshLocalHistoryBtn();}
+
+async function saveToCloud(){
+  const _url=getScriptUrl();
+  if(!_url){toast('⚠️ Chưa cấu hình URL — mở ⚙️ Settings để nhập.');return;}
+  toast('☁️ Đang lưu lên Drive…');
+  try{
+    const state=collectState();
+    const res=await fetch(_url,{
+      method:'POST',
+      body:JSON.stringify({action:'save',id:currentCloudId,state}),
+      headers:{'Content-Type':'text/plain'}
+    });
+    const data=await res.json();
+    if(data.ok){
+      currentCloudId=data.id;
+      toast('✅ Đã lưu lên Drive!');
+    }else{
+      toast('❌ Lỗi: '+(data.error||'unknown'));
+    }
+  }catch(e){
+    toast('❌ Không kết nối được: '+e.message);
+  }
+}
+
+async function openReportsList(){
+  const _url=getScriptUrl();
+  if(!_url){toast('⚠️ Chưa cấu hình URL — mở ⚙️ Settings để nhập.');return;}
+  _allReports=[];
+  document.getElementById('reports-overlay').classList.add('open');
+  document.getElementById('reports-search').value='';
+  document.getElementById('reports-overlay-title').innerHTML='📋 Danh sách báo cáo <em style="font-weight:400;font-size:12px"># Reports</em>';
+  document.getElementById('reports-list-body').innerHTML=
+    '<div style="color:#888;padding:32px;text-align:center">Đang tải… # Loading…</div>';
+  try{
+    const res=await fetch(_url+'?action=list');
+    const data=await res.json();
+    _allReports=data.reports||[];
+    renderReportsList(_allReports);
+  }catch(e){
+    document.getElementById('reports-list-body').innerHTML=
+      '<div style="color:#c0392b;padding:20px">❌ Lỗi kết nối: '+e.message+'</div>';
+  }
+}
+
+function closeReportsList(){
+  document.getElementById('reports-overlay').classList.remove('open');
+}
+
+function filterReports(q){
+  if(!q||!q.trim()){renderReportsList(_allReports);return;}
+  const terms=q.trim().toLowerCase().split(/\s+/);
+  const filtered=_allReports.filter(r=>{
+    const hay=[r.no,r.product,r.customer,r.piwo,r.date,fmtDate(r.date),r.severity]
+               .filter(Boolean).join(' ').toLowerCase();
+    return terms.every(t=>hay.includes(t));
+  });
+  renderReportsList(filtered);
+}
+
+function renderReportsList(reports){
+  const body=document.getElementById('reports-list-body');
+  if(!reports.length){
+    body.innerHTML='<div style="color:#888;padding:48px;text-align:center;font-style:italic">Chưa có báo cáo nào được lưu.</div>';
+    return;
+  }
+  const SEV_COLOR={Critical:'#c0392b',Major:'#e67e22',Minor:'#b8a000',Observation:'#2980b9'};
+  const rows=reports.map(r=>{
+    const isLocal=r.source==='local';
+    const openBtn=isLocal
+      ?`<button class="btn btn-primary" onclick="loadLocalReport('${esc(r.jsonfile)}')" style="padding:5px 12px;font-size:12px">📂 Mở</button>`
+      :`<button class="btn btn-primary" onclick="loadCloudReport('${esc(r.id)}')" style="padding:5px 12px;font-size:12px">📂 Mở</button>`;
+    const delBtn=isLocal
+      ?`<button class="btn" onclick="deleteLocalReport('${esc(r.htmlfile)}','${esc(r.jsonfile)}',this)" style="padding:5px 10px;font-size:12px;background:#c0392b;color:#fff;border:none">🗑</button>`
+      :`<button class="btn" onclick="deleteCloudReport('${esc(r.id)}',this)" style="padding:5px 10px;font-size:12px;background:#c0392b;color:#fff;border:none">🗑</button>`;
+    return `
+    <div style="background:#fff;border:1px solid #e0d4c0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:14px">
+      <div style="flex:0 0 54px;text-align:center;border-right:1px solid #e0d4c0;padding-right:14px">
+        <div style="font-size:16px;font-weight:900;color:#3c2a1a">${esc(r.no)||'—'}</div>
+        <div style="font-size:10px;color:#9a8070;margin-top:2px">${fmtDate(r.date)||''}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.product)||'—'}</div>
+        <div style="font-size:12px;color:#666;margin-top:2px">${esc(r.piwo)||''} ${r.customer?'· '+esc(r.customer):''}</div>
+      </div>
+      <div style="flex:0 0 auto">
+        <span style="background:${SEV_COLOR[r.severity]||'#888'};color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700">${esc(r.severity)||'—'}</span>
+      </div>
+      <div style="display:flex;gap:6px">${openBtn}${delBtn}</div>
+    </div>`;
+  }).join('');
+  body.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">${rows}</div>`;
+}
+
+async function loadCloudReport(id){
+  toast('📂 Đang tải báo cáo…');
+  try{
+    const res=await fetch(getScriptUrl()+'?action=get&id='+encodeURIComponent(id));
+    const data=await res.json();
+    if(data.ok){
+      currentCloudId=id;
+      restoreState(data.state);
+      closeReportsList();
+      toast('✅ Đã tải báo cáo!');
+    }else{
+      toast('❌ '+(data.error||'Không tải được'));
+    }
+  }catch(e){
+    toast('❌ Lỗi: '+e.message);
+  }
+}
+
+async function deleteCloudReport(id,btn){
+  if(!confirm('Xoá báo cáo này khỏi Drive?'))return;
+  btn.disabled=true;
+  try{
+    const res=await fetch(getScriptUrl(),{
+      method:'POST',
+      body:JSON.stringify({action:'delete',id}),
+      headers:{'Content-Type':'text/plain'}
+    });
+    const data=await res.json();
+    if(data.ok){
+      btn.closest('div[style*="background:#fff"]').remove();
+      toast('🗑 Đã xoá.');
+    }else{
+      toast('❌ '+(data.error||'Lỗi xoá'));
+      btn.disabled=false;
+    }
+  }catch(e){
+    toast('❌ '+e.message);
+    btn.disabled=false;
+  }
+}
+
+/* ══════════════════════════════════════
+   LOCAL FOLDER HISTORY
+══════════════════════════════════════ */
+
+async function updateLocalIndex(dir,entry){
+  let index={reports:[]};
+  try{
+    const fh=await dir.getFileHandle('_boka_index.json');
+    const file=await fh.getFile();
+    const txt=await file.text();
+    const parsed=JSON.parse(txt);
+    index={reports:Array.isArray(parsed.reports)?parsed.reports:[]};
+  }catch(_){}
+  // Remove any existing entry with same htmlfile, then prepend new one
+  index.reports=index.reports.filter(r=>r.htmlfile!==entry.htmlfile);
+  index.reports.unshift(entry);
+  const fh=await dir.getFileHandle('_boka_index.json',{create:true});
+  const fw=await fh.createWritable();
+  await fw.write(JSON.stringify(index,null,2));
+  await fw.close();
+}
+
+async function openLocalHistory(){
+  let dir=null;
+  const saved=await dbGet('saveDir');
+  if(saved){
+    try{const perm=await saved.requestPermission({mode:'readonly'});if(perm==='granted')dir=saved;}catch(_){}
+  }
+  if(!dir){
+    toast('⚠️ Chưa chọn thư mục lưu.\nVui lòng cấu hình trong ⚙️ Settings.');
+    return;
+  }
+  _localDirHandle=dir;
+  _allReports=[];
+  document.getElementById('reports-overlay').classList.add('open');
+  document.getElementById('reports-search').value='';
+  document.getElementById('reports-overlay-title').innerHTML='📂 Lịch sử báo cáo local <em style="font-weight:400;font-size:12px"># Local History</em>';
+  document.getElementById('reports-list-body').innerHTML=
+    '<div style="color:#888;padding:32px;text-align:center">Đang đọc thư mục… # Loading…</div>';
+  try{
+    const fh=await dir.getFileHandle('_boka_index.json');
+    const file=await fh.getFile();
+    const txt=await file.text();
+    const index=JSON.parse(txt);
+    _allReports=(index.reports||[]).map(r=>({...r,source:'local'}));
+    renderReportsList(_allReports);
+  }catch(e){
+    if(e.name==='NotFoundError'){
+      document.getElementById('reports-list-body').innerHTML=
+        '<div style="color:#888;padding:48px;text-align:center;font-style:italic">Chưa có báo cáo nào trong thư mục này.<br><em style="font-size:12px">Lưu ít nhất 1 báo cáo để tạo danh sách.</em></div>';
+    }else{
+      document.getElementById('reports-list-body').innerHTML=
+        '<div style="color:#c0392b;padding:20px">❌ Lỗi đọc thư mục: '+e.message+'</div>';
+    }
+  }
+}
+
+async function loadLocalReport(jsonfile){
+  if(!_localDirHandle){toast('❌ Mất kết nối thư mục.\nVui lòng mở lại 📂 History.');return;}
+  toast('📂 Đang tải báo cáo…');
+  try{
+    const fh=await _localDirHandle.getFileHandle(jsonfile);
+    const file=await fh.getFile();
+    const txt=await file.text();
+    const state=JSON.parse(txt);
+    restoreState(state);
+    closeReportsList();
+    toast('✅ Đã tải báo cáo!\n↩ Tiếp tục chỉnh sửa.');
+  }catch(e){
+    toast('❌ Không đọc được file: '+e.message);
+  }
+}
+
+async function deleteLocalReport(htmlfile,jsonfile,btn){
+  if(!confirm('Xoá báo cáo này khỏi thư mục?\n(Xoá cả file HTML và file dữ liệu JSON)'))return;
+  if(!_localDirHandle){toast('❌ Mất kết nối thư mục.');return;}
+  btn.disabled=true;
+  try{
+    try{await _localDirHandle.removeEntry(htmlfile);}catch(_){}
+    try{await _localDirHandle.removeEntry(jsonfile);}catch(_){}
+    // Update manifest
+    let index={reports:[]};
+    try{
+      const fh=await _localDirHandle.getFileHandle('_boka_index.json');
+      const file=await fh.getFile();
+      const parsed=JSON.parse(await file.text());
+      index={reports:Array.isArray(parsed.reports)?parsed.reports:[]};
+    }catch(_){}
+    index.reports=index.reports.filter(r=>r.htmlfile!==htmlfile);
+    const fh=await _localDirHandle.getFileHandle('_boka_index.json',{create:true});
+    const fw=await fh.createWritable();
+    await fw.write(JSON.stringify(index,null,2));
+    await fw.close();
+    // Update cache and UI
+    _allReports=_allReports.filter(r=>r.htmlfile!==htmlfile);
+    const row=btn.closest('div[style*="background:#fff"]');
+    if(row)row.remove();
+    toast('🗑 Đã xoá báo cáo.');
+  }catch(e){
+    toast('❌ Lỗi xoá: '+e.message);
+    btn.disabled=false;
+  }
+}
+
+/* ══════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════ */
+async function openSettings(){
+  try{
+    document.getElementById('settings-script-url').value=localStorage.getItem('boka_script_url')||'';
+    document.getElementById('settings-guide-url').value=localStorage.getItem('boka_guide_url')||'';
+    const mode=getSaveMode();
+    const radio=document.querySelector(`input[name="save-mode"][value="${mode}"]`);
+    if(radio)radio.checked=true;
+  }catch(_){}
+  // Show saved folder name (async)
+  const handle=await dbGet('saveDir');
+  document.getElementById('settings-local-folder').textContent=handle?('📁 '+handle.name):'(chưa chọn)';
+  document.getElementById('settings-modal').style.display='flex';
+}
+function closeSettings(){
+  document.getElementById('settings-modal').style.display='none';
+}
+function saveSettings(){
+  try{
+    const u=document.getElementById('settings-script-url').value.trim();
+    const g=document.getElementById('settings-guide-url').value.trim();
+    const mEl=document.querySelector('input[name="save-mode"]:checked');
+    const m=mEl?mEl.value:'both';
+    if(u)localStorage.setItem('boka_script_url',u);
+    else localStorage.removeItem('boka_script_url');
+    if(g)localStorage.setItem('boka_guide_url',g);
+    else localStorage.removeItem('boka_guide_url');
+    localStorage.setItem('boka_save_mode',m);
+  }catch(_){}
+  closeSettings();
+  applySettings();
+  toast('✅ Đã lưu cài đặt!');
+}
+async function changeLocalFolder(){
+  if(!window.showDirectoryPicker){toast('⚠️ Cần Chrome / Edge.');return;}
+  try{
+    const dir=await window.showDirectoryPicker({mode:'readwrite'});
+    await dbSet('saveDir',dir);
+    document.getElementById('settings-local-folder').textContent='📁 '+dir.name;
+    document.getElementById('btn-local-history').style.display='';
+    toast('✅ Đã chọn thư mục: '+dir.name);
+  }catch(e){if(e.name!=='AbortError')toast('❌ '+e.message);}
+}
+async function clearLocalFolder(){
+  await dbDel('saveDir');
+  _localDirHandle=null;
+  document.getElementById('settings-local-folder').textContent='(chưa chọn)';
+  document.getElementById('btn-local-history').style.display='none';
+  toast('🗑 Đã xoá thư mục đã nhớ.');
+}
+function openUserGuide(){
+  window.open(getGuideUrl(),'_blank');
+}
+
+/* BOOT */
+init();
+initCloud();
+
+// ── Camera capture ─────────────────────────────────────────────────────────
+let camSlideId=null,camPi=null,camStream=null;
+
+function openCamera(id,pi){
+  camSlideId=id;camPi=pi;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){_camFallback(id,pi);return;}
+  // Show modal only AFTER stream is ready — prevents flash-and-close on mobile
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:false})
+    .then(stream=>{
+      camStream=stream;
+      const video=document.getElementById('cam-video');
+      const preview=document.getElementById('cam-preview');
+      video.style.display='block';preview.style.display='none';
+      document.getElementById('cam-ctrl-live').style.display='flex';
+      document.getElementById('cam-ctrl-confirm').style.display='none';
+      document.getElementById('cam-modal').style.display='flex';
+      video.srcObject=stream;
+      video.play().catch(()=>{});
+    })
+    .catch(()=>{closeCamera();});
+}
+
+function _camFallback(id,pi){
+  const fb=document.getElementById('cam-fb-'+id+'-'+pi);
+  if(fb)fb.click();
+}
+
+function capturePhoto(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  const preview=document.getElementById('cam-preview');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  preview.src=canvas.toDataURL('image/jpeg',0.92);
+  video.style.display='none';preview.style.display='block';
+  document.getElementById('cam-ctrl-live').style.display='none';
+  document.getElementById('cam-ctrl-confirm').style.display='flex';
+}
+
+function retakePhoto(){
+  const video=document.getElementById('cam-video');
+  const preview=document.getElementById('cam-preview');
+  preview.style.display='none';video.style.display='block';
+  document.getElementById('cam-ctrl-live').style.display='flex';
+  document.getElementById('cam-ctrl-confirm').style.display='none';
+}
+
+function confirmPhoto(){
+  const canvas=document.getElementById('cam-canvas');
+  const src=canvas.toDataURL('image/jpeg',0.92);
+  const sid=camSlideId,spi=camPi;
+  resizeImage(src,2048,0.82,resized=>{
+    const s=slides.find(s=>s.id===sid);if(!s)return;
+    s.slots[spi].src=resized;
+    const slotEl=getSlotEl(sid,spi);
+    if(!slotEl){renderSlides();closeCamera();return;}
+    const area=slotEl.querySelector('.photo-upload-area');
+    area.innerHTML=`<img src="${resized}" alt="photo" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="triggerUpload(${sid},${spi})" title="Đổi ảnh"><input type="file" accept="image/*" class="photo-upload-input" id="fu-${sid}-${spi}" onchange="loadPhoto(${sid},${spi},this)" onclick="event.stopPropagation()">`;
+    const meta=slotEl.querySelector('.photo-meta');
+    if(meta&&!meta.querySelector('.clear-photo-btn')){
+      const btn=document.createElement('button');
+      btn.className='clear-photo-btn';btn.textContent='✕ Remove photo';
+      btn.setAttribute('onclick',`clearPhoto(${sid},${spi})`);
+      meta.appendChild(btn);
+    }
+    closeCamera();
+  });
+}
+
+function closeCamera(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  document.getElementById('cam-modal').style.display='none';
+  camSlideId=null;camPi=null;
+}
+
+</script>
+
+<div id="cam-modal">
+  <div id="cam-wrap">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-canvas"></canvas>
+    <img id="cam-preview" alt="preview">
+    <div class="cam-ctrl" id="cam-ctrl-live">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-close" onclick="closeCamera()" title="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <span class="cam-label">Đóng</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-capture" onclick="capturePhoto()" title="Chụp ảnh"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+        <span class="cam-label">Chụp</span>
+      </div>
+    </div>
+    <div class="cam-ctrl" id="cam-ctrl-confirm" style="display:none">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-retake" onclick="retakePhoto()" title="Chụp lại"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></button>
+        <span class="cam-label">Chụp lại</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="cam-btn cam-btn-confirm" onclick="confirmPhoto()" title="Lấy ảnh này"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <span class="cam-label">Lấy ảnh</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
