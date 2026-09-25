@@ -414,7 +414,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
         <th style="width:22%">Product Code <em style="font-weight:400;font-style:italic"># Mã SP</em></th>
         <th>Product Name <em style="font-weight:400;font-style:italic"># Tên SP</em></th>
         <th style="width:120px">PI / WO<br><em style="font-weight:400;font-style:italic"># Đơn hàng</em></th>
-        <th style="width:100px">Total Qty <em style="font-weight:400;font-style:italic"># SL Kiểm</em></th>
+        <th style="width:100px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">ĐƠN HÀNG</em></th>
+        <th style="width:90px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">KIỂM</em></th>
         <th style="width:36px"></th>
       </tr>
     </thead>
@@ -538,9 +539,9 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
       <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">
         📖 User Guide URL
       </label>
-      <input id="settings-guide-url" type="url" placeholder="Default: Boka_QC_UserGuide.html (cùng thư mục)"
+      <input id="settings-guide-url" type="url" placeholder="Default: quality-report-userguide.html (GitHub Pages)"
         style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
-      <div style="font-size:11px;color:#9a8070;margin-top:4px">Mặc định: <code>Boka_QC_UserGuide.html</code> cùng thư mục. Điền URL để override (Google Docs, server…).</div>
+      <div style="font-size:11px;color:#9a8070;margin-top:4px">Mặc định: GitHub Pages — quality-report-userguide.html. Điền URL để override (Google Docs, server…).</div>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #e0d4c0;padding-top:16px">
@@ -741,7 +742,7 @@ function getScriptUrl(){
   try{return localStorage.getItem('boka_script_url')||APPS_SCRIPT_URL_DEFAULT;}catch(_){return APPS_SCRIPT_URL_DEFAULT;}
 }
 function getGuideUrl(){
-  try{return localStorage.getItem('boka_guide_url')||'Boka_QC_UserGuide.html';}catch(_){return 'Boka_QC_UserGuide.html';}
+  try{return localStorage.getItem('boka_guide_url')||'https://hieutran0796.github.io/Quality-report/quality-report-userguide.html';}catch(_){return 'https://hieutran0796.github.io/Quality-report/quality-report-userguide.html';}
 }
 function getSaveMode(){
   try{return localStorage.getItem('boka_save_mode')||'both';}catch(_){return 'both';}
@@ -1015,7 +1016,35 @@ function slotCat(id,pi,v){
 
 function slotType(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].type=v;}
 function slotCaption(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].caption=v;}
-function slideField(id,field,v){const s=slides.find(s=>s.id===id);if(s)s[field]=v;}
+function slideField(id,field,v,inputEl){
+  const s=slides.find(s=>s.id===id);if(!s)return;
+  const val=parseInt(v)||0;
+  if(field==='qtyInsp'){
+    // Must be <= order qty of linked product
+    if(s.productRef){
+      const p=productList.find(p=>p.id===s.productRef);
+      const orderQty=parseInt(p&&p.qty)||0;
+      if(orderQty>0&&val>orderQty){
+        toast('⚠️ SL Kiểm ('+val+') không được vượt quá SL Đơn hàng ('+orderQty+').');
+        if(inputEl){inputEl.value=s.qtyInsp||'';}
+        return;
+      }
+    }
+    s[field]=v;
+    renderProductList();
+  } else if(field==='qtyDef'){
+    // Must be <= qtyInsp
+    const inspected=parseInt(s.qtyInsp)||0;
+    if(inspected>0&&val>inspected){
+      toast('⚠️ SL Lỗi ('+val+') không được vượt quá SL Kiểm ('+inspected+').');
+      if(inputEl){inputEl.value=s.qtyDef||'';}
+      return;
+    }
+    s[field]=v;
+  } else {
+    s[field]=v;
+  }
+}
 function slideSetWC(id,v){const s=slides.find(s=>s.id===id);if(s){s.wc=v;if(v!=='Other')s.wcOther='';renderSlides();}}
 
 /* ══════════════════════════════════════
@@ -1033,6 +1062,7 @@ function renderProductList(){
       <td><input type="text" placeholder="Product name…" value="${esc(p.name)}" oninput="productField(${p.id},'name',this.value);refreshProductDropdowns()"></td>
       <td><input type="text" placeholder="PI / WO…" value="${esc(p.order||'')}" oninput="productField(${p.id},'order',this.value)"></td>
       <td><input type="number" min="0" placeholder="0" value="${p.qty||''}" oninput="productField(${p.id},'qty',this.value)"></td>
+      <td style="text-align:center;font-weight:700;color:#2980b9;background:#f0f6ff;font-size:13px">${slides.filter(s=>s.productRef===p.id).reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0)||'—'}</td>
       <td><button class="plist-del" onclick="removeProduct(${p.id})" title="Remove">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -1165,11 +1195,15 @@ function importProductExcel(input){
 })();
 
 function getProductOptions(selectedRef){
+  // Products used by any slide (to show ✓ marker)
+  const usedByAny=new Set(slides.filter(s=>s.productRef).map(s=>s.productRef));
   let html='<option value="">— Select / Nhập tay —</option>';
   productList.forEach(p=>{
     if(!p.code&&!p.name)return;
     const lbl=(p.code&&p.name)?(p.code+' — '+p.name):(p.code||p.name);
-    html+=`<option value="${p.id}"${selectedRef===p.id?' selected':''}>${esc(lbl)}</option>`;
+    const prefix=usedByAny.has(p.id)?'✓ ':'';
+    const bold=usedByAny.has(p.id)?'font-weight:700;':'';
+    html+=`<option value="${p.id}"${selectedRef===p.id?' selected':''} style="${bold}">${prefix}${esc(lbl)}</option>`;
   });
   return html;
 }
@@ -1238,11 +1272,11 @@ function buildSlideMeta(slide){
     </div>
     <div class="form-group" style="flex:0 0 auto;width:130px">
       <label style="white-space:nowrap;display:block">Inspected Qty <em># SL Kiểm</em></label>
-      <input type="number" style="width:130px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value)">
+      <input type="number" style="width:130px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
     </div>
     <div class="form-group" style="flex:0 0 auto;width:120px">
       <label style="white-space:nowrap;display:block">Defect Qty <em># SL Lỗi</em></label>
-      <input type="number" style="width:120px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value)">
+      <input type="number" style="width:120px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
     </div>
   </div>`;
 }
@@ -1646,13 +1680,15 @@ function buildPages(){
     // Build summary: for each product, sum fail qty from slides
     const rows=productList.filter(p=>p.code||p.name).map(p=>{
       const pSlides=slides.filter(s=>s.productRef===p.id);
+      const inspQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0);
       const failQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyDef)||0),0);
       const totalQty=parseInt(p.qty)||0;
       const rate=totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—';
       const rateColor=totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
-      return {p,failQty,totalQty,rate,rateColor};
+      return {p,inspQty,failQty,totalQty,rate,rateColor};
     });
     const grandTotal=rows.reduce((a,r)=>a+(r.totalQty||0),0);
+    const grandInsp=rows.reduce((a,r)=>a+(r.inspQty||0),0);
     const grandFail=rows.reduce((a,r)=>a+r.failQty,0);
     const grandRate=grandTotal>0?(grandFail/grandTotal*100).toFixed(1)+'%':'—';
     pg+=`<div class="page">${pgHdr(fname,prodPg,dateDisp,no)}
@@ -1665,9 +1701,10 @@ function buildPages(){
             <th>Product Code<br><em style="font-weight:400;font-style:italic"># Mã SP</em></th>
             <th>Product Name<br><em style="font-weight:400;font-style:italic"># Tên SP</em></th>
             <th>PI / WO<br><em style="font-weight:400;font-style:italic"># Đơn hàng</em></th>
-            <th style="text-align:center">Total Qty<br><em style="font-weight:400;font-style:italic"># SL Kiểm</em></th>
-            <th style="text-align:center">Fail Qty<br><em style="font-weight:400;font-style:italic"># SL Lỗi</em></th>
-            <th style="text-align:center">Fail Rate<br><em style="font-weight:400;font-style:italic"># Tỉ lệ lỗi</em></th>
+            <th style="text-align:center">SL Đơn hàng<br><em style="font-weight:400;font-style:italic"># Order Qty</em></th>
+            <th style="text-align:center">SL Kiểm<br><em style="font-weight:400;font-style:italic"># Inspected Qty</em></th>
+            <th style="text-align:center">SL Lỗi<br><em style="font-weight:400;font-style:italic"># Defect Qty</em></th>
+            <th style="text-align:center">Tỉ lệ lỗi<br><em style="font-weight:400;font-style:italic"># Fail Rate</em></th>
           </tr>
         </thead>
         <tbody>
@@ -1677,12 +1714,14 @@ function buildPages(){
             <td>${r.p.name||'—'}</td>
             <td>${r.p.order||'—'}</td>
             <td style="text-align:center;font-weight:700">${r.totalQty||'—'}</td>
+            <td style="text-align:center">${r.inspQty||'—'}</td>
             <td class="fail-cell">${r.failQty}</td>
             <td class="rate-cell" style="color:${r.rateColor}">${r.rate}</td>
           </tr>`).join('')}
           <tr class="total-row">
             <td colspan="4" style="text-align:right;padding-right:12px">TOTAL <em style="font-weight:400;font-style:italic"># Tổng</em></td>
             <td style="text-align:center">${grandTotal||'—'}</td>
+            <td style="text-align:center">${grandInsp||'—'}</td>
             <td class="fail-cell">${grandFail}</td>
             <td class="rate-cell" style="color:${grandTotal>0?(grandFail/grandTotal>0.1?'#c0392b':grandFail>0?'#e67e22':'#1a7342'):'#555'}">${grandRate}</td>
           </tr>
