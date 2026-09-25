@@ -1683,14 +1683,14 @@ function buildPages(){
       const inspQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0);
       const failQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyDef)||0),0);
       const totalQty=parseInt(p.qty)||0;
-      const rate=totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—';
-      const rateColor=totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
+      const rate=inspQty>0?(totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—'):'—';
+      const rateColor=inspQty>0&&totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
       return {p,inspQty,failQty,totalQty,rate,rateColor};
     });
     const grandTotal=rows.reduce((a,r)=>a+(r.totalQty||0),0);
     const grandInsp=rows.reduce((a,r)=>a+(r.inspQty||0),0);
     const grandFail=rows.reduce((a,r)=>a+r.failQty,0);
-    const grandRate=grandTotal>0?(grandFail/grandTotal*100).toFixed(1)+'%':'—';
+    const grandRate=grandInsp>0?(grandTotal>0?(grandFail/grandTotal*100).toFixed(1)+'%':'—'):'—';
     pg+=`<div class="page">${pgHdr(fname,prodPg,dateDisp,no)}
       <div class="rc-print-title" style="margin-bottom:4px">PRODUCT INSPECTION SUMMARY <em style="font-weight:400;font-style:italic"># TỔNG HỢP KIỂM TRA SẢN PHẨM</em></div>
       <div style="font-size:13px;color:#7a6050;font-style:italic;margin-bottom:10px">Report No. ${no} — ${dateDisp}</div>
@@ -1715,15 +1715,15 @@ function buildPages(){
             <td>${r.p.order||'—'}</td>
             <td style="text-align:center;font-weight:700">${r.totalQty||'—'}</td>
             <td style="text-align:center">${r.inspQty||'—'}</td>
-            <td class="fail-cell">${r.failQty}</td>
+            <td class="fail-cell">${r.inspQty?r.failQty:'—'}</td>
             <td class="rate-cell" style="color:${r.rateColor}">${r.rate}</td>
           </tr>`).join('')}
           <tr class="total-row">
             <td colspan="4" style="text-align:right;padding-right:12px">TOTAL <em style="font-weight:400;font-style:italic"># Tổng</em></td>
             <td style="text-align:center">${grandTotal||'—'}</td>
             <td style="text-align:center">${grandInsp||'—'}</td>
-            <td class="fail-cell">${grandFail}</td>
-            <td class="rate-cell" style="color:${grandTotal>0?(grandFail/grandTotal>0.1?'#c0392b':grandFail>0?'#e67e22':'#1a7342'):'#555'}">${grandRate}</td>
+            <td class="fail-cell">${grandInsp?grandFail:'—'}</td>
+            <td class="rate-cell" style="color:${grandInsp>0&&grandTotal>0?(grandFail/grandTotal>0.1?'#c0392b':grandFail>0?'#e67e22':'#1a7342'):'#555'}">${grandRate}</td>
           </tr>
         </tbody>
       </table>
