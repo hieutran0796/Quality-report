@@ -482,6 +482,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
   <button id="btn-local-history" class="btn btn-secondary" onclick="openLocalHistory()" style="display:none !important;border-color:#27ae60;color:#27ae60">📂 History</button>
   <button id="btn-cloud-save" class="btn btn-save" onclick="saveToCloud()" style="display:none;background:#2980b9">☁️ Save Cloud</button>
   <button id="btn-export-html" class="btn btn-save" onclick="saveReport()">💾 Lưu file gốc</button>
+  <button class="btn btn-secondary" onclick="sendEmail()" style="border-color:#2471a3;color:#2471a3">📧 Gửi Email</button>
   <button class="btn btn-secondary" onclick="openSettings()" title="Settings / Cài đặt" style="padding:9px 13px">⚙️</button>
 </div>
 
@@ -535,13 +536,32 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
     </div>
 
     <!-- User Guide URL -->
-    <div style="margin-bottom:22px">
+    <div style="margin-bottom:16px">
       <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">
         📖 User Guide URL
       </label>
       <input id="settings-guide-url" type="url" placeholder="Default: quality-report-userguide.html (GitHub Pages)"
         style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
       <div style="font-size:11px;color:#9a8070;margin-top:4px">Mặc định: GitHub Pages — quality-report-userguide.html. Điền URL để override (Google Docs, server…).</div>
+    </div>
+
+    <!-- Email settings -->
+    <div style="margin-bottom:22px;padding:12px;background:#f0f6ff;border:1px solid #b8d0f0;border-radius:5px">
+      <div style="font-size:11px;font-weight:700;color:#2471a3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+        📧 Email <em style="text-transform:none;font-weight:400"># Cài đặt gửi mail</em>
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:11px;color:#5a7a9a;font-weight:700;display:block;margin-bottom:4px">Người nhận (To) — cách nhau bằng dấu phẩy</label>
+        <input id="settings-email-to" type="text" placeholder="email1@company.com, email2@company.com"
+          style="width:100%;border:1px solid #b8d0f0;border-radius:4px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;color:#2c1a0e;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:#5a7a9a;font-weight:700;display:block;margin-bottom:4px">
+          Nội dung email — dùng <code style="background:#dde8f5;padding:1px 4px;border-radius:3px">{no} {date} {product} {piwo} {customer} {severity} {filename}</code>
+        </label>
+        <textarea id="settings-email-body" rows="7" placeholder="Dear Team,&#10;&#10;Please find attached the Quality Inspection Report.&#10;..."
+          style="width:100%;border:1px solid #b8d0f0;border-radius:4px;padding:7px 10px;font-size:12px;font-family:inherit;background:#fff;color:#2c1a0e;resize:vertical;box-sizing:border-box;line-height:1.5"></textarea>
+      </div>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #e0d4c0;padding-top:16px">
@@ -808,6 +828,28 @@ function pad(n,l=2){return String(n).padStart(l,'0');}
 function dateForTitle(){const raw=(document.getElementById('hdr-date').value||todayStr()).replace(/-/g,'');return raw.slice(0,8);}
 function getReportNo(){return pad(parseInt(document.getElementById('hdr-no').value)||1,3);}
 function getFileName(){return `${dateForTitle()}_Quality_report_${getReportNo()}.html`;}
+function sendEmail(){
+  const no=getReportNo();
+  const fname=getFileName().replace(/\.html$/i,'');
+  const dateDisp=fmtDate(document.getElementById('hdr-date').value)||'—';
+  const product=document.getElementById('hdr-product').value||'—';
+  const piwo=document.getElementById('hdr-piwo').value||'—';
+  const customer=document.getElementById('hdr-customer').value||'—';
+  const sev=severity||'—';
+  const to=(localStorage.getItem('boka_email_to')||'').trim();
+  const tmpl=localStorage.getItem('boka_email_body')||DEFAULT_EMAIL_BODY;
+  const bodyText=tmpl
+    .replace(/\{no\}/g,no)
+    .replace(/\{date\}/g,dateDisp)
+    .replace(/\{product\}/g,product)
+    .replace(/\{piwo\}/g,piwo)
+    .replace(/\{customer\}/g,customer)
+    .replace(/\{severity\}/g,sev)
+    .replace(/\{filename\}/g,fname);
+  const subject=encodeURIComponent(`[Quality Report] ${fname}`);
+  const body=encodeURIComponent(bodyText);
+  window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
+}
 
 /* ══════════════════════════════════════
    TABS
@@ -2490,10 +2532,13 @@ async function deleteLocalReport(htmlfile,jsonfile,btn){
 /* ══════════════════════════════════════
    SETTINGS MODAL
 ══════════════════════════════════════ */
+const DEFAULT_EMAIL_BODY=`Dear Team,\n\nPlease find the Quality Inspection Report details below.\n\nReport No. : {no}\nDate       : {date}\nProduct    : {product}\nPI / WO    : {piwo}\nCustomer   : {customer}\nSeverity   : {severity}\n\nPlease attach the report file: {filename}\n\nBest regards,`;
 async function openSettings(){
   try{
     document.getElementById('settings-script-url').value=localStorage.getItem('boka_script_url')||'';
     document.getElementById('settings-guide-url').value=localStorage.getItem('boka_guide_url')||'';
+    document.getElementById('settings-email-to').value=localStorage.getItem('boka_email_to')||'';
+    document.getElementById('settings-email-body').value=localStorage.getItem('boka_email_body')||DEFAULT_EMAIL_BODY;
     const mode=getSaveMode();
     const radio=document.querySelector(`input[name="save-mode"][value="${mode}"]`);
     if(radio)radio.checked=true;
@@ -2512,10 +2557,15 @@ function saveSettings(){
     const g=document.getElementById('settings-guide-url').value.trim();
     const mEl=document.querySelector('input[name="save-mode"]:checked');
     const m=mEl?mEl.value:'both';
+    const et=document.getElementById('settings-email-to').value.trim();
+    const eb=document.getElementById('settings-email-body').value;
     if(u)localStorage.setItem('boka_script_url',u);
     else localStorage.removeItem('boka_script_url');
     if(g)localStorage.setItem('boka_guide_url',g);
     else localStorage.removeItem('boka_guide_url');
+    if(et)localStorage.setItem('boka_email_to',et);
+    else localStorage.removeItem('boka_email_to');
+    localStorage.setItem('boka_email_body',eb||DEFAULT_EMAIL_BODY);
     localStorage.setItem('boka_save_mode',m);
   }catch(_){}
   closeSettings();
