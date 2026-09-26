@@ -435,7 +435,6 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
   <div class="print-toggles">
     <label class="print-toggle-item"><input type="checkbox" id="ptog-summary" checked onchange="updatePrintToggles()">📋 Cover / Issue</label>
     <label class="print-toggle-item"><input type="checkbox" id="ptog-products" checked onchange="updatePrintToggles()">📦 Product Summary</label>
-    <label class="print-toggle-item"><input type="checkbox" id="ptog-fishbone" checked onchange="updatePrintToggles()">🔍 RC Fishbone</label>
     <label class="print-toggle-item"><input type="checkbox" id="ptog-rclist" checked onchange="updatePrintToggles()">📝 RC List</label>
     <label class="print-toggle-item"><input type="checkbox" id="ptog-capa" checked onchange="updatePrintToggles()">✅ CAPA</label>
   </div>
@@ -454,6 +453,10 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <!-- ══ ROOT CAUSE TAB ══ -->
 <div id="tab-rc" class="tab-panel">
   <div class="card">
+    <div class="card-title">Loại lỗi <em style="font-weight:400;color:#9a8070;font-style:italic"># Defect Issue Type</em></div>
+    <div id="rc-issue-selector"></div>
+  </div>
+  <div class="card">
     <div class="card-title">Fishbone Diagram — 5M1E <em style="font-weight:400;color:#9a8070;font-style:italic"># Biểu đồ xương cá</em></div>
     <div class="fishbone-container" id="fishbone-live"></div>
   </div>
@@ -465,6 +468,10 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 
 <!-- ══ CAPA TAB ══ -->
 <div id="tab-capa" class="tab-panel">
+  <div class="card">
+    <div class="card-title">Loại lỗi <em style="font-weight:400;color:#9a8070;font-style:italic"># Defect Issue Type</em></div>
+    <div id="capa-issue-selector"></div>
+  </div>
   <div class="card">
     <div class="card-title">Corrective &amp; Preventive Actions <em style="font-weight:400;color:#9a8070;font-style:italic"># Hành động khắc phục &amp; phòng ngừa</em></div>
     <div id="capa-container"></div>
@@ -751,6 +758,9 @@ let capaCustomDate = '';
 let capaCustomAsap = false;
 let productList = [];      // [{id, code, name, qty}]
 let productIdCounter = 1;
+let issueTypes = []; // [{id, label, showFishbone}]
+let issueData = {};  // {id: {rcState, rcCustom, capaState, capaCustom, capaCustomNote, capaCustomDone, capaCustomDept, capaCustomDate, capaCustomAsap}}
+let activeIssueId = null;
 
 /* ── Cloud config ── */
 const APPS_SCRIPT_URL_DEFAULT = ''; // hardcoded fallback (leave empty; configure in Settings)
@@ -802,20 +812,151 @@ function init(){
   _doInit();
 }
 
+function makeBlankIssueData(){
+  const rcSt={};
+  Object.keys(RC_DATA).forEach(k=>{rcSt[k]=RC_DATA[k].items.map(it=>({code:it.code,checked:false,note:''}));});
+  const capaSt={};
+  CAPA_GROUPS.forEach(g=>{g.items.forEach(it=>{capaSt[it.code]={checked:false,note:'',done:false,dept:'',date:'',asap:false,photos:[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}]};});});
+  return {rcState:rcSt,rcCustom:'',capaState:capaSt,capaCustom:'',capaCustomNote:'',capaCustomDone:false,capaCustomDept:'',capaCustomDate:'',capaCustomAsap:false};
+}
+
+function saveActiveIssuePrimitives(){
+  if(!activeIssueId||!issueData[activeIssueId])return;
+  const d=issueData[activeIssueId];
+  d.rcCustom=rcCustom;
+  d.capaCustom=capaCustom;
+  d.capaCustomNote=capaCustomNote;
+  d.capaCustomDone=capaCustomDone;
+  d.capaCustomDept=capaCustomDept;
+  d.capaCustomDate=capaCustomDate;
+  d.capaCustomAsap=capaCustomAsap;
+}
+
+function setActiveIssue(id){
+  saveActiveIssuePrimitives();
+  activeIssueId=id;
+  if(!issueData[id])issueData[id]=makeBlankIssueData();
+  const d=issueData[id];
+  rcState=d.rcState;
+  capaState=d.capaState;
+  rcCustom=d.rcCustom;
+  capaCustom=d.capaCustom;
+  capaCustomNote=d.capaCustomNote;
+  capaCustomDone=d.capaCustomDone;
+  capaCustomDept=d.capaCustomDept;
+  capaCustomDate=d.capaCustomDate;
+  capaCustomAsap=d.capaCustomAsap;
+  renderIssueSelector();
+  renderRCForm();
+  renderFishbone();
+  renderCapaForm();
+}
+
+function syncIssueTypesFromSlides(){
+  const seen=new Set(issueTypes.map(it=>it.id));
+  slides.forEach(slide=>{
+    slide.slots.forEach(slot=>{
+      if(slot.type&&!seen.has(slot.type)){
+        seen.add(slot.type);
+        let label=slot.type;
+        // find label from TAXONOMY
+        Object.keys(TAXONOMY).forEach(cat=>{
+          if(TAXONOMY[cat][slot.type])label=typeDisplay(TAXONOMY[cat][slot.type],false);
+        });
+        issueTypes.push({id:slot.type,label,showFishbone:false});
+      }
+    });
+  });
+  if(!activeIssueId&&issueTypes.length>0){
+    setActiveIssue(issueTypes[0].id);
+  }else{
+    renderIssueSelector();
+  }
+}
+
+function renderIssueSelector(){
+  ['rc','capa'].forEach(tab=>{
+    const el=document.getElementById(tab+'-issue-selector');
+    if(!el)return;
+    if(issueTypes.length===0){
+      el.innerHTML=`<div style="font-size:12px;color:#9a8070;font-style:italic;padding:8px 0">Chưa có loại lỗi nào. Chọn "Defect Type" trong tab Issue hoặc bấm nút bên dưới để thêm thủ công.</div>
+        <button onclick="addIssueType()" style="margin-top:4px;padding:5px 14px;border-radius:20px;border:1.5px dashed #c8b89a;background:#fdfaf5;color:#5c4a32;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">＋ Thêm loại lỗi</button>`;
+      return;
+    }
+    el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      ${issueTypes.map(it=>{
+        const active=it.id===activeIssueId;
+        if(it._editing){
+          return `<div style="display:flex;align-items:center;border-radius:20px;border:2px solid #5c4a32;overflow:hidden;background:#fdfaf5">
+            <input id="new-issue-input" type="text" placeholder="Tên loại lỗi…" value="${esc(it.label)}"
+              style="border:none;outline:none;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:700;color:#5c4a32;background:transparent;width:160px"
+              onkeydown="if(event.key==='Enter')confirmNewIssueType('${it.id}')"
+              onblur="confirmNewIssueType('${it.id}')">
+            <button onclick="confirmNewIssueType('${it.id}')" style="padding:5px 10px;border:none;border-left:1px solid #c8b89a;background:#f0e8d8;color:#5c4a32;cursor:pointer;font-size:11px;font-weight:700">✓</button>
+          </div>`;
+        }
+        return `<div style="display:flex;align-items:center;border-radius:20px;border:2px solid ${active?'#5c4a32':'#c8b89a'};overflow:hidden;background:${active?'#5c4a32':'transparent'}">
+          <span onclick="setActiveIssue('${esc(it.id)}')" style="padding:5px 12px;color:${active?'#fff':'#5c4a32'};font-weight:700;font-size:12px;cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.label)}">${esc(it.label)}</span>
+          <label title="Thêm fishbone vào in" style="padding:5px 8px;background:${active?'rgba(255,255,255,.15)':'#f0e8d8'};cursor:pointer;border-left:1px solid ${active?'rgba(255,255,255,.3)':'#c8b89a'};display:flex;align-items:center;gap:3px" onclick="event.stopPropagation()">
+            <input type="checkbox" ${it.showFishbone?'checked':''} onchange="issueTypes.find(x=>x.id==='${esc(it.id)}').showFishbone=this.checked" style="margin:0;width:11px;height:11px">
+            <span style="font-size:10px;color:${active?'#ffe':'#7a6050'}">🐟</span>
+          </label>
+          <button onclick="event.stopPropagation();removeIssueType('${esc(it.id)}')" title="Xoá" style="padding:5px 8px;border:none;border-left:1px solid ${active?'rgba(255,255,255,.3)':'#c8b89a'};background:${active?'rgba(255,255,255,.1)':'transparent'};color:${active?'#ffc':'#c0392b'};cursor:pointer;font-size:11px">✕</button>
+        </div>`;
+      }).join('')}
+      <button onclick="addIssueType()" style="padding:5px 14px;border-radius:20px;border:1.5px dashed #c8b89a;background:#fdfaf5;color:#5c4a32;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">＋ Thêm</button>
+    </div>`;
+  });
+}
+
+function addIssueType(){
+  saveActiveIssuePrimitives();
+  const id='custom-'+Date.now();
+  issueTypes.push({id,label:'',showFishbone:false,_editing:true});
+  renderIssueSelector();
+  setTimeout(()=>{const inp=document.getElementById('new-issue-input');if(inp)inp.focus();},50);
+}
+
+function confirmNewIssueType(id){
+  const inp=document.getElementById('new-issue-input');
+  const label=inp?inp.value.trim():'';
+  const it=issueTypes.find(x=>x.id===id);
+  if(!it)return;
+  if(!label){issueTypes=issueTypes.filter(x=>x.id!==id);renderIssueSelector();return;}
+  it.label=label;
+  delete it._editing;
+  renderIssueSelector();
+  setActiveIssue(id);
+}
+
+function removeIssueType(id){
+  issueTypes=issueTypes.filter(it=>it.id!==id);
+  delete issueData[id];
+  if(activeIssueId===id){
+    activeIssueId=null;
+    if(issueTypes.length>0)setActiveIssue(issueTypes[0].id);
+    else{rcState={};capaState={};renderIssueSelector();renderRCForm();renderFishbone();renderCapaForm();}
+  }else{
+    renderIssueSelector();
+  }
+}
+
 function _doInit(){
   document.getElementById('hdr-date').value = todayStr();
   document.getElementById('hdr-no').value = '001';
-  // RC state
-  Object.keys(RC_DATA).forEach(k=>{
-    rcState[k] = RC_DATA[k].items.map(it=>({code:it.code,checked:false,note:''}));
-  });
-  // CAPA state
-  CAPA_GROUPS.forEach(g=>{g.items.forEach(it=>{capaState[it.code]={checked:false,note:'',done:false,dept:'',date:'',asap:false,photos:[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}]};});});
+  // Issue types / RC / CAPA state (new model)
+  issueTypes=[];
+  issueData={};
+  activeIssueId=null;
+  rcState={};
+  capaState={};
+  rcCustom=''; capaCustom=''; capaCustomNote=''; capaCustomDone=false; capaCustomDept=''; capaCustomDate=''; capaCustomAsap=false;
   // Product list
   productList = [];
   productIdCounter = 1;
   renderProductList();
   addSlide();
+  syncIssueTypesFromSlides();
   renderRCForm();
   renderCapaForm();
   renderFishbone();
@@ -871,7 +1012,6 @@ let printToggles={summary:true,products:true,fishbone:true,rclist:true,capa:true
 function updatePrintToggles(){
   printToggles.summary=document.getElementById('ptog-summary').checked;
   printToggles.products=(document.getElementById('ptog-products')||{checked:true}).checked;
-  printToggles.fishbone=document.getElementById('ptog-fishbone').checked;
   printToggles.rclist=document.getElementById('ptog-rclist').checked;
   printToggles.capa=document.getElementById('ptog-capa').checked;
 }
@@ -909,6 +1049,7 @@ function removeSlide(id){
   if(slides.length<=1){toast('⚠️ Cần ít nhất một trang ảnh.');return;}
   slides=slides.filter(s=>s.id!==id);
   renderSlides();
+  syncIssueTypesFromSlides();
 }
 
 function renderSlides(){
@@ -1056,7 +1197,7 @@ function slotCat(id,pi,v){
   }
 }
 
-function slotType(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].type=v;}
+function slotType(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].type=v;syncIssueTypesFromSlides();}
 function slotCaption(id,pi,v){const s=slides.find(s=>s.id===id);if(s)s.slots[pi].caption=v;}
 function slideField(id,field,v,inputEl){
   const s=slides.find(s=>s.id===id);if(!s)return;
@@ -1328,10 +1469,15 @@ function buildSlideMeta(slide){
 ══════════════════════════════════════ */
 function renderRCForm(){
   const acc=document.getElementById('rc-accordion');
+  if(!acc)return;
   acc.innerHTML='';
+  if(!activeIssueId){
+    acc.innerHTML='<div style="font-size:12px;color:#9a8070;font-style:italic;padding:12px 4px">Chọn loại lỗi ở trên để bắt đầu nhập nguyên nhân.</div>';
+    return;
+  }
   Object.keys(RC_DATA).forEach(key=>{
     const bone=RC_DATA[key];
-    const state=rcState[key];
+    const state=rcState[key]||RC_DATA[key].items.map(it=>({code:it.code,checked:false,note:''}));
     const cnt=state.filter(i=>i.checked).length;
     const div=document.createElement('div');
     div.className='rc-bone';
@@ -1392,7 +1538,9 @@ function rcToggle(key,idx,checked){
 ══════════════════════════════════════ */
 function renderFishbone(){
   const el=document.getElementById('fishbone-live');
-  if(el)el.innerHTML=buildFishboneSVG();
+  if(!el)return;
+  if(!activeIssueId){el.innerHTML='<div style="font-size:12px;color:#9a8070;font-style:italic;padding:12px 4px">Chọn loại lỗi ở trên để xem sơ đồ.</div>';return;}
+  el.innerHTML=buildFishboneSVG(false,rcState);
 }
 
 function fbWrapText(text, maxChars) {
@@ -1408,7 +1556,7 @@ function fbWrapText(text, maxChars) {
   return lines.length ? lines : [text];
 }
 
-function buildFishboneSVG(forPrint){
+function buildFishboneSVG(forPrint, iRcState){
   const spineY=348, spineStart=55, spineEnd=1190;
   const connXs=[300,720,1140];
   const SPAN=231;   // horizontal span bone-tip → spine (+40% wider)
@@ -1453,7 +1601,7 @@ function buildFishboneSVG(forPrint){
     s+=`<text x="${tx}" y="${ly2}" text-anchor="middle" font-size="16" font-style="italic" fill="#7a6050">${b.lvi}</text>`;
 
     const allItems=RC_DATA[b.key]?.items||[];
-    const checked=(rcState[b.key]||[]).map((st,i)=>({...allItems[i],...st})).filter(i=>i.checked);
+    const checked=((iRcState||rcState)[b.key]||[]).map((st,i)=>({...allItems[i],...st})).filter(i=>i.checked);
     if(!checked.length)return;
 
     const n=checked.length;
@@ -1517,7 +1665,12 @@ function buildFishboneSVG(forPrint){
 ══════════════════════════════════════ */
 function renderCapaForm(){
   const c=document.getElementById('capa-container');
+  if(!c)return;
   c.innerHTML='';
+  if(!activeIssueId){
+    c.innerHTML='<div style="font-size:12px;color:#9a8070;font-style:italic;padding:12px 4px">Chọn loại lỗi ở trên để bắt đầu nhập CAPA.</div>';
+    return;
+  }
   CAPA_GROUPS.forEach(g=>{
     const d=document.createElement('div');
     d.style.marginBottom='12px';
@@ -1827,59 +1980,86 @@ function buildPages(){
       ${pgFtr(pn,fname)}</div>`;
   });
 
-  /* Root Cause Page 1: Fishbone */
-  const rcPg=slides.length+2+slidePageOffset;
-  const rcPg2=slides.length+3+slidePageOffset;
-  const rcChecked={};
-  Object.keys(RC_DATA).forEach(k=>{
-    const items=RC_DATA[k].items;
-    const ch=(rcState[k]||[]).map((st,i)=>({...items[i],...st})).filter(i=>i.checked);
-    if(ch.length)rcChecked[k]=ch;
-  });
-  const hasRC=Object.keys(rcChecked).length>0;
+  /* RC + CAPA pages — per issue type */
+  saveActiveIssuePrimitives(); // ensure primitives are synced
+  let pgOffset = slides.length + 2 + slidePageOffset;
+  if(printToggles.rclist||printToggles.capa){
+    const capaNotes=(document.getElementById('capa-notes')||{}).value||'';
+    const lastCapaIssueId=printToggles.capa&&issueTypes.length>0?issueTypes[issueTypes.length-1].id:null;
+    issueTypes.forEach(it=>{
+      const d=issueData[it.id]||makeBlankIssueData();
+      const iRcState=d.rcState;
+      const iCapaState=d.capaState;
+      const iRcCustom=d.rcCustom||'';
+      const iCapaCustom=d.capaCustom||'';
+      const iCapaCustomNote=d.capaCustomNote||'';
+      const iCapaCustomDone=d.capaCustomDone||false;
+      const iCapaCustomDept=d.capaCustomDept||'';
+      const iCapaCustomDate=d.capaCustomDate||'';
+      const iCapaCustomAsap=d.capaCustomAsap||false;
+      const issueLabel=it.label||it.id;
 
-  if(printToggles.fishbone)   pg+=`<div class="page">${pgHdr(fname,rcPg,dateDisp,no)}
-    <div class="rc-print-title">ROOT CAUSE ANALYSIS — 5M1E <em style="font-weight:400;font-style:italic"># PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ</em></div>
-    <div style="font-size:14px;font-style:italic;color:#7a6050;margin-bottom:6px">Fishbone Diagram # BIỂU ĐỒ XƯƠNG CÁ</div>
-    <div class="fishbone-print" style="margin:6px 0 0;text-align:center">${buildFishboneSVG(true)}</div>
-    ${pgFtr(rcPg,fname)}</div>`;
+      // Fishbone page (optional per issue)
+      if(it.showFishbone){
+        pg+=`<div class="page">${pgHdr(fname,pgOffset,dateDisp,no)}
+          <div class="rc-print-title">ROOT CAUSE ANALYSIS — 5M1E <em style="font-weight:400;font-style:italic"># PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ</em></div>
+          <div style="font-size:13px;font-weight:700;color:#7a6050;margin-bottom:4px">Issue: ${esc(issueLabel)}</div>
+          <div style="font-size:13px;font-style:italic;color:#7a6050;margin-bottom:6px">Fishbone Diagram # BIỂU ĐỒ XƯƠNG CÁ</div>
+          <div class="fishbone-print" style="margin:6px 0 0;text-align:center">${buildFishboneSVG(true,iRcState)}</div>
+          ${pgFtr(pgOffset,fname)}</div>`;
+        pgOffset++;
+      }
 
-  /* Root Cause Page 2: RC List */
-  const rcListHtml=hasRC?`<div class="rc-print-list">${(()=>{let rcIdx=0;return Object.entries(rcChecked).map(([k,items])=>`<div class="rc-print-cat"><div class="rc-print-cat-title">${RC_DATA[k].label_en} # <em style="font-weight:400;font-style:italic">${RC_DATA[k].label_vi}</em></div>${items.map(it=>{const idx=++rcIdx;return `<div class="rc-print-item" style="margin-bottom:6px;flex-direction:column;align-items:flex-start"><span class="rc-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${it.note?`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${it.note}</div>`:''}</div>`;}).join('')}</div>`).join('');})()}</div>`:'';
-  if(printToggles.rclist)   pg+=`<div class="page">${pgHdr(fname,rcPg2,dateDisp,no)}
-    <div class="rc-print-title">ROOT CAUSE LIST — 5M1E <em style="font-weight:400;font-style:italic"># DANH SÁCH NGUYÊN NHÂN GỐC RỄ</em></div>
-    ${!hasRC?`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">No root cause selected # Chưa chọn nguyên nhân</div>`:rcListHtml}
-    ${rcCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Root Cause # Nguyên nhân khác</div><div style="font-size:13px;white-space:pre-wrap">${rcCustom}</div></div>`:''}
-    ${pgFtr(rcPg2,fname)}</div>`;
+      // RC List page
+      if(printToggles.rclist){
+        const rcChecked={};
+        Object.keys(RC_DATA).forEach(k=>{
+          const items=RC_DATA[k].items;
+          const ch=(iRcState[k]||[]).map((st,i)=>({...items[i],...st})).filter(i=>i.checked);
+          if(ch.length)rcChecked[k]=ch;
+        });
+        const hasRC=Object.keys(rcChecked).length>0;
+        const rcListHtml=hasRC?`<div class="rc-print-list">${(()=>{let rcIdx=0;return Object.entries(rcChecked).map(([k,items])=>`<div class="rc-print-cat"><div class="rc-print-cat-title">${RC_DATA[k].label_en} # <em style="font-weight:400;font-style:italic">${RC_DATA[k].label_vi}</em></div>${items.map(it=>{const idx=++rcIdx;return `<div class="rc-print-item" style="margin-bottom:6px;flex-direction:column;align-items:flex-start"><span class="rc-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${it.note?`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${it.note}</div>`:''}</div>`;}).join('')}</div>`).join('');})()}</div>`:'';
+        pg+=`<div class="page">${pgHdr(fname,pgOffset,dateDisp,no)}
+          <div class="rc-print-title">ROOT CAUSE LIST — 5M1E <em style="font-weight:400;font-style:italic"># DANH SÁCH NGUYÊN NHÂN GỐC RỄ</em></div>
+          <div style="font-size:13px;font-weight:700;color:#7a6050;margin-bottom:8px">Issue: ${esc(issueLabel)}</div>
+          ${!hasRC?`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">Chưa chọn nguyên nhân</div>`:rcListHtml}
+          ${iRcCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Root Cause # Nguyên nhân khác</div><div style="font-size:13px;white-space:pre-wrap">${iRcCustom}</div></div>`:''}
+          ${pgFtr(pgOffset,fname)}</div>`;
+        pgOffset++;
+      }
 
-  /* CAPA Page */
-  const capaPg=slides.length+4+slidePageOffset;
-  const capaChecked={};
-  CAPA_GROUPS.forEach(g=>{
-    const items=g.items.filter(it=>capaState[it.code]?.checked);
-    if(items.length)capaChecked[g.title]={title_vi:g.title_vi,items};
-  });
-  const hasCapa=Object.keys(capaChecked).length>0;
-  const capaNotes=(document.getElementById('capa-notes')||{}).value||'';
-
-  if(printToggles.capa)   pg+=`<div class="page">${pgHdr(fname,capaPg,dateDisp,no)}
-    <div class="capa-print-title">CORRECTIVE &amp; PREVENTIVE ACTIONS <em style="font-weight:400;font-style:italic"># HÀNH ĐỘNG KHẮC PHỤC &amp; PHÒNG NGỪA</em></div>
-    ${hasCapa?`<div>
-      ${(()=>{let capaIdx=0;return Object.entries(capaChecked).map(([t,g])=>`<div class="capa-print-group">
-        <div class="capa-print-group-title">${t} # <em style="font-weight:400;font-style:italic">${g.title_vi}</em></div>
-        ${g.items.map(it=>{const idx=++capaIdx;const st=capaState[it.code]||{};const metaLines=[];if(st.note||st.done)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${st.done?'✅ Done # Đã có':''}${(st.done&&st.note)?' — ':''}${st.note||''}</div>`);if(st.dept)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${st.dept}</strong></div>`);if(st.date||st.asap)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(st.date)}${st.asap?' ⚡ASAP':''}</strong></div>`);const photos=(st.photos||[]).filter(ph=>ph.src);const photoHtml=photos.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;margin-left:18px">${photos.map(ph=>`<div style="display:flex;flex-direction:column;gap:0"><img src="${ph.src}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px;border:1px solid #d0c0a0">${ph.caption?`<div style="font-size:13px;color:#1a1a1a;margin-top:5px;text-align:justify">${ph.caption}</div>`:''}</div>`).join('')}</div>`:'';return `<div class="capa-print-item" style="flex-direction:column;align-items:flex-start;margin-bottom:8px"><span class="capa-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${metaLines.join('')}${photoHtml}</div>`;}).join('')}
-      </div>`).join('');})()}
-    </div>`:`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">No action selected # Chưa chọn hành động</div>`}
-    ${capaCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Action # Hành động khác</div><div style="font-size:13px;white-space:pre-wrap">${capaCustom}</div>${(()=>{const ml=[];if(capaCustomNote||capaCustomDone)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px;text-align:justify">${capaCustomDone?'✅ Done # Đã có':''}${(capaCustomDone&&capaCustomNote)?' — ':''}${capaCustomNote||''}</div>`);if(capaCustomDept)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${capaCustomDept}</strong></div>`);if(capaCustomDate||capaCustomAsap)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(capaCustomDate)}${capaCustomAsap?' ⚡ASAP':''}</strong></div>`);return ml.join('');})()}</div>`:''}
-    ${capaNotes?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:9px;font-weight:bold;color:#5c4a32;margin-bottom:4px">NOTES # GHI CHÚ</div><div style="font-size:9px;white-space:pre-wrap">${capaNotes}</div></div>`:''}
-    <div style="margin-top:16px;border-top:1px solid #e0d0b0;padding-top:10px;display:flex;justify-content:flex-end">
-      <div style="width:300px">
-        <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#3c2a1a;margin-bottom:6px;white-space:nowrap">Reported By <em style="font-weight:400;font-style:italic;color:#7a6050"># Người lập báo cáo</em></div>
-        <div style="border-bottom:1px solid #888;height:40px;margin-bottom:6px"></div>
-        <div style="font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px">${reporter}</div>
-      </div>
-    </div>
-    ${pgFtr(capaPg,fname)}</div>`;
+      // CAPA page
+      if(printToggles.capa){
+        const capaChecked={};
+        CAPA_GROUPS.forEach(g=>{
+          const items=g.items.filter(it=>iCapaState[it.code]?.checked);
+          if(items.length)capaChecked[g.title]={title_vi:g.title_vi,items};
+        });
+        const hasCapa=Object.keys(capaChecked).length>0;
+        pg+=`<div class="page">${pgHdr(fname,pgOffset,dateDisp,no)}
+          <div class="capa-print-title">CORRECTIVE &amp; PREVENTIVE ACTIONS <em style="font-weight:400;font-style:italic"># HÀNH ĐỘNG KHẮC PHỤC &amp; PHÒNG NGỪA</em></div>
+          <div style="font-size:13px;font-weight:700;color:#7a6050;margin-bottom:8px">Issue: ${esc(issueLabel)}</div>
+          ${hasCapa?`<div>
+            ${(()=>{let capaIdx=0;return Object.entries(capaChecked).map(([t,g])=>`<div class="capa-print-group">
+              <div class="capa-print-group-title">${t} # <em style="font-weight:400;font-style:italic">${g.title_vi}</em></div>
+              ${g.items.map(it=>{const idx=++capaIdx;const st=iCapaState[it.code]||{};const metaLines=[];if(st.note||st.done)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px;text-align:justify">${st.done?'✅ Done # Đã có':''}${(st.done&&st.note)?' — ':''}${st.note||''}</div>`);if(st.dept)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${st.dept}</strong></div>`);if(st.date||st.asap)metaLines.push(`<div style="margin-left:18px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(st.date)}${st.asap?' ⚡ASAP':''}</strong></div>`);const photos=(st.photos||[]).filter(ph=>ph.src);const photoHtml=photos.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;margin-left:18px">${photos.map(ph=>`<div style="display:flex;flex-direction:column;gap:0"><img src="${ph.src}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px;border:1px solid #d0c0a0">${ph.caption?`<div style="font-size:13px;color:#1a1a1a;margin-top:5px;text-align:justify">${ph.caption}</div>`:''}</div>`).join('')}</div>`:'';return `<div class="capa-print-item" style="flex-direction:column;align-items:flex-start;margin-bottom:8px"><span class="capa-print-text"><strong>${idx}.</strong> <strong>${it.en}</strong> # <em style="font-weight:400">${it.vi}</em></span>${metaLines.join('')}${photoHtml}</div>`;}).join('')}
+            </div>`).join('');})()}
+          </div>`:`<div style="color:#999;font-size:10px;margin-top:8px;font-style:italic">Chưa chọn hành động</div>`}
+          ${iCapaCustom?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:13px;font-weight:bold;color:#5c4a32;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Other Action # Hành động khác</div><div style="font-size:13px;white-space:pre-wrap">${iCapaCustom}</div>${(()=>{const ml=[];if(iCapaCustomNote||iCapaCustomDone)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px;text-align:justify">${iCapaCustomDone?'✅ Done # Đã có':''}${(iCapaCustomDone&&iCapaCustomNote)?' — ':''}${iCapaCustomNote||''}</div>`);if(iCapaCustomDept)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DEPT:</strong> <strong style="color:#c0392b">${iCapaCustomDept}</strong></div>`);if(iCapaCustomDate||iCapaCustomAsap)ml.push(`<div style="margin-left:14px;font-size:13px;margin-top:1px"><strong>DATE:</strong> <strong style="color:#c0392b">${fmtDate(iCapaCustomDate)}${iCapaCustomAsap?' ⚡ASAP':''}</strong></div>`);return ml.join('');})()}</div>`:''}
+          ${capaNotes?`<div style="margin-top:10px;border-top:1px solid #e0d0b0;padding-top:8px"><div style="font-size:9px;font-weight:bold;color:#5c4a32;margin-bottom:4px">NOTES # GHI CHÚ</div><div style="font-size:9px;white-space:pre-wrap">${capaNotes}</div></div>`:''}
+          ${it.id===lastCapaIssueId?`<div style="margin-top:16px;border-top:1px solid #e0d0b0;padding-top:10px;display:flex;justify-content:flex-end">
+            <div style="width:300px">
+              <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#3c2a1a;margin-bottom:6px;white-space:nowrap">Reported By <em style="font-weight:400;font-style:italic;color:#7a6050"># Người lập báo cáo</em></div>
+              <div style="border-bottom:1px solid #888;height:40px;margin-bottom:6px"></div>
+              <div style="font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px">${reporter}</div>
+            </div>
+          </div>`:''}
+          ${pgFtr(pgOffset,fname)}</div>`;
+        pgOffset++;
+      }
+    });
+  }
 
   return pg;
 }
@@ -1911,7 +2091,7 @@ async function saveReport(){
   document.getElementById('resume-modal').style.display='none';
   const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
   stateEl.textContent='null';
-  renderSlides();renderRCForm();renderCapaForm();renderFishbone();
+  renderSlides();renderIssueSelector();renderRCForm();renderCapaForm();renderFishbone();
 
   // ── B. Try File System Access API (desktop Chrome / Edge) ──
   if(window.showDirectoryPicker){
@@ -2170,6 +2350,10 @@ function collectState(){
     severity,
     slides:JSON.parse(JSON.stringify(slides)),
     slideIdCounter,
+    issueTypes:JSON.parse(JSON.stringify(issueTypes)),
+    issueData:JSON.parse(JSON.stringify(issueData)),
+    activeIssueId,
+    // keep these for backward compat (old file format)
     rcState:JSON.parse(JSON.stringify(rcState)),
     rcCustom,
     capaState:JSON.parse(JSON.stringify(capaState)),
@@ -2242,21 +2426,56 @@ function restoreState(st){
   slides=st.slides||[];
   slideIdCounter=st.slideIdCounter||(slides.length+1);
   renderSlides();
-  // RC
-  rcState=st.rcState||{};
-  rcCustom=st.rcCustom||'';
+  // Issue types (new format) OR migrate from old format
+  if(st.issueTypes&&st.issueTypes.length>0){
+    issueTypes=st.issueTypes;
+    issueData=st.issueData||{};
+    activeIssueId=st.activeIssueId||null;
+    // Restore active issue primitives into globals
+    if(activeIssueId&&issueData[activeIssueId]){
+      const d=issueData[activeIssueId];
+      rcState=d.rcState||{};
+      capaState=d.capaState||{};
+      rcCustom=d.rcCustom||'';
+      capaCustom=d.capaCustom||'';
+      capaCustomNote=d.capaCustomNote||'';
+      capaCustomDone=!!d.capaCustomDone;
+      capaCustomDept=d.capaCustomDept||'';
+      capaCustomDate=d.capaCustomDate||'';
+      capaCustomAsap=!!d.capaCustomAsap;
+    }else if(issueTypes.length>0){
+      setActiveIssue(issueTypes[0].id);
+    }
+  }else if(st.rcState){
+    // Migrate old format: create a single "Issue 1" with old rc/capa data
+    issueTypes=[{id:'migrated-1',label:'Issue 1',showFishbone:false}];
+    issueData={'migrated-1':{
+      rcState:st.rcState||{},
+      rcCustom:st.rcCustom||'',
+      capaState:st.capaState||{},
+      capaCustom:st.capaCustom||'',
+      capaCustomNote:st.capaCustomNote||'',
+      capaCustomDone:!!st.capaCustomDone,
+      capaCustomDept:st.capaCustomDept||'',
+      capaCustomDate:st.capaCustomDate||'',
+      capaCustomAsap:!!st.capaCustomAsap
+    }};
+    activeIssueId='migrated-1';
+    rcState=issueData['migrated-1'].rcState;
+    capaState=issueData['migrated-1'].capaState;
+    rcCustom=issueData['migrated-1'].rcCustom;
+    capaCustom=issueData['migrated-1'].capaCustom;
+    capaCustomNote=issueData['migrated-1'].capaCustomNote;
+    capaCustomDone=issueData['migrated-1'].capaCustomDone;
+    capaCustomDept=issueData['migrated-1'].capaCustomDept;
+    capaCustomDate=issueData['migrated-1'].capaCustomDate;
+    capaCustomAsap=issueData['migrated-1'].capaCustomAsap;
+  }
+  // Backfill photos in capaState
+  Object.values(capaState).forEach(cs=>{if(!cs.photos)cs.photos=[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}];});
+  renderIssueSelector();
   renderRCForm();
   renderFishbone();
-  // CAPA
-  capaState=st.capaState||{};
-  // Backfill photos array for older saved states
-  Object.values(capaState).forEach(cs=>{if(!cs.photos)cs.photos=[{src:'',caption:''},{src:'',caption:''},{src:'',caption:''}];});
-  capaCustom=st.capaCustom||'';
-  capaCustomNote=st.capaCustomNote||'';
-  capaCustomDone=!!st.capaCustomDone;
-  capaCustomDept=st.capaCustomDept||'';
-  capaCustomDate=st.capaCustomDate||'';
-  capaCustomAsap=!!st.capaCustomAsap;
   renderCapaForm();
   // Product list
   productList=st.productList||[];
@@ -2264,7 +2483,7 @@ function restoreState(st){
   renderProductList();
   // Print toggles
   const pt=st.printToggles||{};
-  ['summary','products','fishbone','rclist','capa'].forEach(k=>{
+  ['summary','products','rclist','capa'].forEach(k=>{
     const el=document.getElementById('ptog-'+k);
     if(el)el.checked=pt[k]!==false;
   });
