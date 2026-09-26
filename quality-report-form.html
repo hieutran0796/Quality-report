@@ -219,7 +219,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
 .meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
 .issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
-.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:4px 7px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:9px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:13px;font-weight:700;color:#c0392b;text-transform:uppercase}.slide-info-table td:first-child{width:calc((100% - 20px) / 3 + 5px)}.slide-info-table td:nth-child(2),.slide-info-table td:nth-child(3),.slide-info-table td:nth-child(4){width:calc((100% - 20px) / 6 + 5px)}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:7px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
 .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
@@ -1036,7 +1036,7 @@ function setSeverity(s){
 ══════════════════════════════════════ */
 function addSlide(){
   const id=slideIdCounter++;
-  slides.push({id,wc:'',wcOther:'',date:todayStr(),productName:'',productCode:'',productRef:null,qtyInsp:'',qtyDef:'',slots:[
+  slides.push({id,wc:'',wcOther:'',date:todayStr(),productName:'',productCode:'',productRef:null,qtyInsp:'',qtyDef:'',orderQty:'',slots:[
     {src:'',cat:'',type:'',caption:''},
     {src:'',cat:'',type:'',caption:''},
     {src:'',cat:'',type:'',caption:''}
@@ -1224,6 +1224,14 @@ function slideField(id,field,v,inputEl){
       return;
     }
     s[field]=v;
+  } else if(field==='orderQty'){
+    s.orderQty=v;
+    // Update qtyInsp validation if needed
+    const newOrder=parseInt(v)||0;
+    const curInsp=parseInt(s.qtyInsp)||0;
+    if(newOrder>0&&curInsp>newOrder){
+      toast('⚠️ SL Kiểm ('+curInsp+') không được vượt quá SL Đơn hàng ('+newOrder+'). Vui lòng kiểm tra lại.');
+    }
   } else {
     s[field]=v;
   }
@@ -1433,33 +1441,49 @@ function buildSlideMeta(slide){
     ? `<div class="form-group" style="min-width:150px"><label>Other (specify) <em># Ghi rõ</em></label><input type="text" value="${esc(slide.wcOther)}" oninput="slideField(${slide.id},'wcOther',this.value)" placeholder="Work center name…"></div>`
     : '';
   const manualStyle=(!slide.productRef)?'':'display:none';
-  return `<div class="slide-meta">
-    <div class="form-group" style="flex:0 0 auto;width:240px">
-      <label style="white-space:nowrap;display:block">Work Center / Stage <em># Công đoạn</em></label>
-      <select style="width:240px" onchange="slideSetWC(${slide.id},this.value)">
+  const LB='white-space:nowrap;display:block;font-size:9px';
+  return `<div class="slide-meta" style="flex-wrap:nowrap;gap:8px;align-items:flex-end;overflow-x:auto">
+    <div class="form-group" style="flex:0 0 auto;width:165px">
+      <label style="${LB}">Work Center / Stage <em># Công đoạn</em></label>
+      <select style="width:165px;font-size:12px" onchange="slideSetWC(${slide.id},this.value)">
         <option value="">-- Select # Chọn --</option>
         ${WC_STAGES.map(w=>`<option value="${w}"${slide.wc===w?' selected':''}>${w}</option>`).join('')}
       </select>
     </div>
     ${wcOtherField}
-    <div class="form-group" style="flex:0 0 auto;width:185px">
-      <label style="white-space:nowrap;display:block">Issue Date <em># Ngày phát sinh</em></label>
-      <input type="date" style="width:185px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
+    <div class="form-group" style="flex:0 0 auto;width:130px">
+      <label style="${LB}">Issue Date <em># Ngày phát sinh</em></label>
+      <input type="date" style="width:130px;font-size:12px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
     </div>
-    <div class="form-group" style="flex:0 0 auto;min-width:200px">
-      <label style="white-space:nowrap;display:block">Product <em># Sản phẩm</em></label>
-      <select class="product-sel" style="width:200px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
+    <div class="form-group" style="flex:0 0 auto;width:230px">
+      <label style="${LB}">Product <em># Sản phẩm</em></label>
+      <select class="product-sel" style="width:230px;font-size:12px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
       <div class="product-manual-wrap" style="${manualStyle}">
-        <input type="text" style="width:200px" placeholder="Product name / Tên SP…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
+        <input type="text" style="width:230px;font-size:12px" placeholder="Product name…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
       </div>
     </div>
-    <div class="form-group" style="flex:0 0 auto;width:130px">
-      <label style="white-space:nowrap;display:block">Inspected Qty <em># SL Kiểm</em></label>
-      <input type="number" style="width:130px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
+    ${(()=>{
+      if(slide.productRef){
+        const lp=productList.find(p=>p.id===slide.productRef);
+        const oq=lp?(lp.qty||'—'):'—';
+        return `<div class="form-group" style="flex:0 0 auto;width:70px">
+          <label style="${LB}">Order Qty <em># SL ĐH</em></label>
+          <input type="number" style="width:70px;font-size:12px;background:#f0f6ff;color:#1a5276;font-weight:700" min="0" placeholder="Auto" value="${oq==='—'?'':oq}" readonly title="Lấy từ bảng sản phẩm">
+        </div>`;
+      } else {
+        return `<div class="form-group" style="flex:0 0 auto;width:70px">
+          <label style="${LB}">Order Qty <em># SL ĐH</em></label>
+          <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.orderQty||''}" oninput="slideField(${slide.id},'orderQty',this.value,this)">
+        </div>`;
+      }
+    })()}
+    <div class="form-group" style="flex:0 0 auto;width:70px">
+      <label style="${LB}">Inspected Qty <em># SL Kiểm</em></label>
+      <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
     </div>
-    <div class="form-group" style="flex:0 0 auto;width:120px">
-      <label style="white-space:nowrap;display:block">Defect Qty <em># SL Lỗi</em></label>
-      <input type="number" style="width:120px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
+    <div class="form-group" style="flex:0 0 auto;width:70px;margin-left:auto">
+      <label style="${LB}">Defect Qty <em># SL Lỗi</em></label>
+      <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
     </div>
   </div>`;
 }
@@ -1876,10 +1900,12 @@ function buildPages(){
     const rows=productList.filter(p=>p.code||p.name).map(p=>{
       const pSlides=slides.filter(s=>s.productRef===p.id);
       const inspQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0);
-      const failQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyDef)||0),0);
+      const rawFailQty=pSlides.reduce((a,s)=>a+(parseInt(s.qtyDef)||0),0);
       const totalQty=parseInt(p.qty)||0;
-      const rate=inspQty>0?(totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—'):'—';
-      const rateColor=inspQty>0&&totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
+      // Cap total defective at order qty (1 unit can have multiple defect types)
+      const failQty=totalQty>0?Math.min(rawFailQty,totalQty):rawFailQty;
+      const rate=totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—';
+      const rateColor=totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
       return {p,inspQty,failQty,totalQty,rate,rateColor};
     });
     const grandTotal=rows.reduce((a,r)=>a+(r.totalQty||0),0);
@@ -1939,29 +1965,42 @@ function buildPages(){
     } else if(slide.productName){
       productLabel=slide.productName;
     }
+    // Compute order qty and defect rate for this slide
+    let slideOrderQty=0;
+    if(slide.productRef){const lp=productList.find(p=>p.id===slide.productRef);slideOrderQty=parseInt(lp&&lp.qty)||0;}
+    else{slideOrderQty=parseInt(slide.orderQty)||0;}
+    const slideDefQty=parseInt(slide.qtyDef)||0;
+    const defectRate=slideOrderQty>0&&slideDefQty>0?((slideDefQty/slideOrderQty)*100).toFixed(1)+'%':'—';
+    const oqLabel=slideOrderQty>0?slideOrderQty+' pcs':'—';
     pg+=`<div class="page">${pgHdr(fname,pn,dateDisp,no)}
       <div class="issue-slide-header">ISSUE — SLIDE ${si+1} <em style="font-weight:400;font-style:italic"># ẢNH LỖI — TRANG ${si+1}</em></div>
       <table class="slide-info-table">
         <colgroup>
-          <col style="width:calc((100% - 20px) / 3 + 5px)">
-          <col style="width:calc((100% - 20px) / 6 + 5px)">
-          <col style="width:calc((100% - 20px) / 6 + 5px)">
-          <col style="width:calc((100% - 20px) / 6 + 5px)">
-          <col>
+          <col style="width:28%">
+          <col style="width:14%">
+          <col style="width:12%">
+          <col style="width:12%">
+          <col style="width:12%">
+          <col style="width:12%">
+          <col style="width:10%">
         </colgroup>
         <tr>
           <td class="sit-label">Product <em># Sản phẩm</em></td>
           <td class="sit-label">Work Center <em># Công đoạn</em></td>
           <td class="sit-label">Issue Date <em># Ngày phát sinh</em></td>
+          <td class="sit-label">Order Qty <em># SL ĐH</em></td>
           <td class="sit-label">Inspected Qty <em># SL Kiểm</em></td>
           <td class="sit-label">Defect Qty <em># SL Lỗi</em></td>
+          <td class="sit-label">Defect Rate <em># Tỉ lệ</em></td>
         </tr>
         <tr>
           <td class="sit-value">${productLabel}</td>
           <td class="sit-value">${wcLbl}</td>
           <td class="sit-value">${sdDate}</td>
+          <td class="sit-value">${oqLabel}</td>
           <td class="sit-value">${slide.qtyInsp||'—'} pcs</td>
           <td class="sit-value">${slide.qtyDef||'—'} pcs</td>
+          <td class="sit-value" style="color:${slideOrderQty>0&&slideDefQty>0?(slideDefQty/slideOrderQty>0.1?'#c0392b':slideDefQty/slideOrderQty>0?'#e67e22':'#1a7342'):'#555'}">${defectRate}</td>
         </tr>
       </table>
       <div class="photos-grid">
@@ -2188,7 +2227,7 @@ body{font-family:sans-serif;background:#d8cfc0;margin:0;padding:20px}
 .meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
 .meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
 .issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
-.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:4px 7px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:9px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:13px;font-weight:700;color:#c0392b;text-transform:uppercase}.slide-info-table td:first-child{width:calc((100% - 20px) / 3 + 5px)}.slide-info-table td:nth-child(2),.slide-info-table td:nth-child(3),.slide-info-table td:nth-child(4){width:calc((100% - 20px) / 6 + 5px)}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:7px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
 .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
