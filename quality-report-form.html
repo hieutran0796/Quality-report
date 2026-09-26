@@ -906,7 +906,7 @@ function addSlide(){
 }
 
 function removeSlide(id){
-  if(slides.length<=1){toast('⚠️ Need at least one slide.\n/ Cần ít nhất một trang ảnh.');return;}
+  if(slides.length<=1){toast('⚠️ Cần ít nhất một trang ảnh.');return;}
   slides=slides.filter(s=>s.id!==id);
   renderSlides();
 }
@@ -1899,81 +1899,91 @@ function pgFtr(pn,fname){
    SAVE (File System Access API)
 ══════════════════════════════════════ */
 async function saveReport(){
-  if(!window.showDirectoryPicker){
-    toast('⚠️ File saving requires Chrome or Edge.\nVui lòng dùng Chrome / Edge để lưu file.');
-    return;
+  const fname=getFileName();
+
+  // ── A. Build HTML snapshot (shared by both save paths) ──
+  const state=collectState();
+  const stateJson=JSON.stringify(state);
+  const stateEl=document.getElementById('__boka_saved_state__');
+  stateEl.textContent=stateJson;
+  const _ids=['slides-container','rc-accordion','capa-container','fishbone-live','print-pages'];
+  _ids.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  document.getElementById('resume-modal').style.display='none';
+  const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  stateEl.textContent='null';
+  renderSlides();renderRCForm();renderCapaForm();renderFishbone();
+
+  // ── B. Try File System Access API (desktop Chrome / Edge) ──
+  if(window.showDirectoryPicker){
+    let dir=null;
+    const saved=await dbGet('saveDir');
+    if(saved){
+      try{
+        const perm=await saved.requestPermission({mode:'readwrite'});
+        if(perm==='granted')dir=saved;
+        else{
+          await dbDel('saveDir');
+          toast('📁 Quyền truy cập thư mục bị từ chối.\nVui lòng chọn lại thư mục lưu.');
+        }
+      }catch(_){
+        await dbDel('saveDir'); // stale / invalid handle — folder may have been moved or deleted
+        toast('📁 Thư mục lưu không còn hợp lệ (đã đổi tên/xóa?).\nVui lòng chọn lại thư mục.');
+      }
+    }
+    if(!dir){
+      try{
+        dir=await window.showDirectoryPicker({mode:'readwrite'});
+        await dbSet('saveDir',dir);
+      }catch(e){
+        if(e.name==='AbortError')return; // user cancelled — stop here
+        // showDirectoryPicker failed on this device — fall through to blob download
+      }
+    }
+    if(dir){
+      try{
+        toast('💾 Đang lưu…');
+        const fh=await dir.getFileHandle(fname,{create:true});
+        const fw=await fh.createWritable();
+        await fw.write(html);
+        await fw.close();
+        // Companion JSON
+        const jsonFname=fname.replace(/\.html$/,'.json');
+        const jfh=await dir.getFileHandle(jsonFname,{create:true});
+        const jfw=await jfh.createWritable();
+        await jfw.write(stateJson);
+        await jfw.close();
+        _localDirHandle=dir;
+        const _hdr=state.hdr||{};
+        await updateLocalIndex(dir,{
+          htmlfile:fname,jsonfile:jsonFname,
+          no:_hdr.no||getReportNo(),product:_hdr.product||'',
+          customer:_hdr.customer||'',piwo:_hdr.piwo||'',
+          date:_hdr.date||todayStr(),severity:state.severity||'',
+          savedAt:new Date().toISOString(),source:'local'
+        });
+        await writeLog(dir,fname);
+        toast(`✅ Đã lưu thành công!\n${fname}\n↩ Mở lại trong Chrome để tiếp tục chỉnh sửa`);
+        return; // done
+      }catch(e){
+        if(e.name==='AbortError')return;
+        await dbDel('saveDir'); // something went wrong — clear handle, fall through to blob
+      }
+    }
   }
-  // Try to reuse saved folder handle (IndexedDB)
-  let dir=null;
-  const saved=await dbGet('saveDir');
-  if(saved){
-    try{const perm=await saved.requestPermission({mode:'readwrite'});if(perm==='granted')dir=saved;}catch(_){}
-  }
-  if(!dir){
-    try{dir=await window.showDirectoryPicker({mode:'readwrite'});await dbSet('saveDir',dir);}
-    catch(e){if(e.name!=='AbortError')toast('❌ Error: '+e.message);return;}
-  }
+
+  // ── C. Blob download fallback (mobile / unsupported browsers) ──
   try{
-    const fname=getFileName();
-    toast('💾 Saving… # Đang lưu…');
-
-    // 1. Collect full state
-    const state=collectState();
-    const stateJson=JSON.stringify(state);
-
-    // 2. Inject state into the embedded script tag
-    const stateEl=document.getElementById('__boka_saved_state__');
-    stateEl.textContent=stateJson;
-
-    // 3. Temporarily clear dynamic containers so outerHTML stays lean
-    const ids=['slides-container','rc-accordion','capa-container','fishbone-live','print-pages'];
-    ids.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
-    // Also hide the resume modal in case it's open
-    document.getElementById('resume-modal').style.display='none';
-
-    // 4. Capture clean app HTML (state JSON embedded, containers empty)
-    const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
-
-    // 5. Reset state tag to null (this file stays fresh)
-    stateEl.textContent='null';
-
-    // 6. Re-render all dynamic content (restore working app)
-    renderSlides();
-    renderRCForm();
-    renderCapaForm();
-    renderFishbone();
-
-    // 7. Write the saved file
-    const fh=await dir.getFileHandle(fname,{create:true});
-    const fw=await fh.createWritable();
-    await fw.write(html);
-    await fw.close();
-
-    // 7b. Write companion JSON state file (for local history reload)
-    const jsonFname=fname.replace(/\.html$/,'.json');
-    const jfh=await dir.getFileHandle(jsonFname,{create:true});
-    const jfw=await jfh.createWritable();
-    await jfw.write(stateJson);
-    await jfw.close();
-
-    // 7c. Keep global handle + update local index manifest
-    _localDirHandle=dir;
-    const _hdr=state.hdr||{};
-    await updateLocalIndex(dir,{
-      htmlfile:fname,jsonfile:jsonFname,
-      no:_hdr.no||getReportNo(),product:_hdr.product||'',
-      customer:_hdr.customer||'',piwo:_hdr.piwo||'',
-      date:_hdr.date||todayStr(),severity:state.severity||'',
-      savedAt:new Date().toISOString(),source:'local'
-    });
-    // History button kept hidden
-
-    // 8. Update CSV log
-    await writeLog(dir,fname);
-
-    toast(`✅ Saved!\n${fname}\n↩ Open in Chrome to resume editing\n/ Mở lại trong Chrome để tiếp tục`);
+    toast('💾 Đang tải xuống…');
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},3000);
+    toast(`✅ Tải về thành công!\n${fname}\n📂 Kiểm tra thư mục Downloads`);
   }catch(e){
-    if(e.name!=='AbortError')toast('❌ Error: '+e.message);
+    toast('❌ Không thể lưu file: '+e.message);
   }
 }
 
