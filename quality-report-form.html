@@ -219,7 +219,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
 .meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
 .issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
-.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:7px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:normal;word-break:normal;overflow-wrap:normal}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
 .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
@@ -335,15 +335,15 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
         <label>Report Date <em># Ngày</em></label>
         <input type="date" id="hdr-date">
       </div>
-      <div class="form-group" style="max-width:120px">
+      <div class="form-group" style="max-width:108px">
         <label>Report No. <em># Số</em></label>
         <input type="text" id="hdr-no" placeholder="001">
       </div>
-      <div class="form-group">
+      <div class="form-group" style="flex:11">
         <label>Product / Item <em># Sản phẩm</em></label>
         <input type="text" id="hdr-product" placeholder="Product name / Item code">
       </div>
-      <div class="form-group">
+      <div class="form-group" style="flex:9">
         <label>PI / WO <em># Đơn hàng</em></label>
         <input type="text" id="hdr-piwo" placeholder="PI / WO number">
       </div>
@@ -388,7 +388,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group">
+      <div class="form-group" style="margin-left:20%">
         <label>Description of Issue <em># Mô tả vấn đề</em></label>
         <textarea id="hdr-desc" rows="3" placeholder="Brief description of the non-conformance # Mô tả ngắn gọn…"></textarea>
       </div>
@@ -1451,39 +1451,39 @@ function buildSlideMeta(slide){
       </select>
     </div>
     ${wcOtherField}
-    <div class="form-group" style="flex:0 0 auto;width:130px">
+    <div class="form-group" style="flex:0 0 auto;width:130px;margin-left:20px">
       <label style="${LB}">Issue Date <em># Ngày phát sinh</em></label>
       <input type="date" style="width:130px;font-size:12px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
     </div>
-    <div class="form-group" style="flex:0 0 auto;width:230px">
+    <div class="form-group" style="flex:0 0 auto;width:265px;margin-left:8px">
       <label style="${LB}">Product <em># Sản phẩm</em></label>
-      <select class="product-sel" style="width:230px;font-size:12px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
+      <select class="product-sel" style="width:265px;font-size:12px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
       <div class="product-manual-wrap" style="${manualStyle}">
-        <input type="text" style="width:230px;font-size:12px" placeholder="Product name…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
+        <input type="text" style="width:265px;font-size:12px" placeholder="Product name…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
       </div>
     </div>
     ${(()=>{
       if(slide.productRef){
         const lp=productList.find(p=>p.id===slide.productRef);
         const oq=lp?(lp.qty||'—'):'—';
-        return `<div class="form-group" style="flex:0 0 auto;width:70px">
+        return `<div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px">
           <label style="${LB}">Order Qty <em># SL ĐH</em></label>
-          <input type="number" style="width:70px;font-size:12px;background:#f0f6ff;color:#1a5276;font-weight:700" min="0" placeholder="Auto" value="${oq==='—'?'':oq}" readonly title="Lấy từ bảng sản phẩm">
+          <input type="number" style="width:100px;font-size:12px;background:#f0f6ff;color:#1a5276;font-weight:700" min="0" placeholder="Auto" value="${oq==='—'?'':oq}" readonly title="Lấy từ bảng sản phẩm">
         </div>`;
       } else {
-        return `<div class="form-group" style="flex:0 0 auto;width:70px">
+        return `<div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px">
           <label style="${LB}">Order Qty <em># SL ĐH</em></label>
-          <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.orderQty||''}" oninput="slideField(${slide.id},'orderQty',this.value,this)">
+          <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.orderQty||''}" oninput="slideField(${slide.id},'orderQty',this.value,this)">
         </div>`;
       }
     })()}
-    <div class="form-group" style="flex:0 0 auto;width:70px">
-      <label style="${LB}">Inspected Qty <em># SL Kiểm</em></label>
-      <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
+    <div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:2px">
+      <label style="${LB}">Inspected <em># SL Kiểm</em></label>
+      <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
     </div>
-    <div class="form-group" style="flex:0 0 auto;width:70px;margin-left:auto">
-      <label style="${LB}">Defect Qty <em># SL Lỗi</em></label>
-      <input type="number" style="width:70px;font-size:12px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
+    <div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px;margin-right:20px">
+      <label style="${LB}">Defect <em># SL Lỗi</em></label>
+      <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
     </div>
   </div>`;
 }
@@ -1974,35 +1974,26 @@ function buildPages(){
     const oqLabel=slideOrderQty>0?slideOrderQty+' pcs':'—';
     pg+=`<div class="page">${pgHdr(fname,pn,dateDisp,no)}
       <div class="issue-slide-header">ISSUE — SLIDE ${si+1} <em style="font-weight:400;font-style:italic"># ẢNH LỖI — TRANG ${si+1}</em></div>
-      <table class="slide-info-table">
-        <colgroup>
-          <col style="width:28%">
-          <col style="width:14%">
-          <col style="width:12%">
-          <col style="width:12%">
-          <col style="width:12%">
-          <col style="width:12%">
-          <col style="width:10%">
-        </colgroup>
-        <tr>
-          <td class="sit-label">Product <em># Sản phẩm</em></td>
-          <td class="sit-label">Work Center <em># Công đoạn</em></td>
-          <td class="sit-label">Issue Date <em># Ngày phát sinh</em></td>
-          <td class="sit-label">Order Qty <em># SL ĐH</em></td>
-          <td class="sit-label">Inspected Qty <em># SL Kiểm</em></td>
-          <td class="sit-label">Defect Qty <em># SL Lỗi</em></td>
-          <td class="sit-label">Defect Rate <em># Tỉ lệ</em></td>
-        </tr>
-        <tr>
-          <td class="sit-value">${productLabel}</td>
-          <td class="sit-value">${wcLbl}</td>
-          <td class="sit-value">${sdDate}</td>
-          <td class="sit-value">${oqLabel}</td>
-          <td class="sit-value">${slide.qtyInsp||'—'} pcs</td>
-          <td class="sit-value">${slide.qtyDef||'—'} pcs</td>
-          <td class="sit-value" style="color:${slideOrderQty>0&&slideDefQty>0?(slideDefQty/slideOrderQty>0.1?'#c0392b':slideDefQty/slideOrderQty>0?'#e67e22':'#1a7342'):'#555'}">${defectRate}</td>
-        </tr>
-      </table>
+      <div style="display:flex;flex-direction:column;width:100%;margin-bottom:10px;border:1px solid #c8b48a;overflow:hidden">
+        <div style="display:flex;width:100%">
+          <div style="flex:32;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;min-width:0">Product <em style="font-style:italic;font-weight:400;color:#9a8070"># Sản phẩm</em></div>
+          <div style="flex:16;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Work Center <em style="font-style:italic;font-weight:400;color:#9a8070"># Công đoạn</em></div>
+          <div style="flex:12;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Issue Date <em style="font-style:italic;font-weight:400;color:#9a8070"># Ngày</em></div>
+          <div style="flex:10;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Order Qty <em style="font-style:italic;font-weight:400;color:#9a8070"># SL ĐH</em></div>
+          <div style="flex:12;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Inspected <em style="font-style:italic;font-weight:400;color:#9a8070"># SL Kiểm</em></div>
+          <div style="flex:10;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Defect <em style="font-style:italic;font-weight:400;color:#9a8070"># SL Lỗi</em></div>
+          <div style="flex:8;padding:3px 5px;background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">Rate <em style="font-style:italic;font-weight:400;color:#9a8070"># Tỉ lệ</em></div>
+        </div>
+        <div style="display:flex;width:100%;border-top:1px solid #c8b48a">
+          <div style="flex:32;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;min-width:0;overflow:hidden;text-overflow:ellipsis">${productLabel}</div>
+          <div style="flex:16;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${wcLbl}</div>
+          <div style="flex:12;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${sdDate}</div>
+          <div style="flex:10;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${oqLabel}</div>
+          <div style="flex:12;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${slide.qtyInsp||'—'} pcs</div>
+          <div style="flex:10;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${slide.qtyDef||'—'} pcs</div>
+          <div style="flex:8;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0;color:${slideOrderQty>0&&slideDefQty>0?(slideDefQty/slideOrderQty>0.1?'#c0392b':slideDefQty/slideOrderQty>0?'#e67e22':'#1a7342'):'#555'}">${defectRate}</div>
+        </div>
+      </div>
       <div class="photos-grid">
         ${slide.slots.map(slot=>{
           const catDisp=slot.cat?catDisplay(slot.cat,true):'';
@@ -2227,7 +2218,7 @@ body{font-family:sans-serif;background:#d8cfc0;margin:0;padding:20px}
 .meta-table td:nth-child(4){white-space:nowrap;text-transform:uppercase}
 .meta-table td em{font-style:italic;color:#9a8070;text-transform:none}
 .issue-slide-header{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
-.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:7px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
+.slide-info-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed}.slide-info-table td{border:1px solid #c8b48a;padding:3px 5px;vertical-align:top}.slide-info-table .sit-label{background:#f5ede0;font-size:8.4px;font-weight:700;color:#5c4a32;letter-spacing:.5px;text-transform:uppercase;white-space:normal;word-break:normal;overflow-wrap:normal}.slide-info-table .sit-label em{font-style:italic;font-weight:400;color:#9a8070}.slide-info-table .sit-value{background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase}
 .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;width:100%;margin:0 0 8px 0}
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
