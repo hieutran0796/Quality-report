@@ -462,37 +462,45 @@ figcaption{background:var(--beige-dark);padding:8px 14px;font-size:13px;border-t
   <div class="section-num">8</div>
   <div class="section-title">
     <h2><span class="h-en">SAVE REPORT LOG</span><span class="sep"> # </span><span class="h-vi">LƯU BÁO CÁO</span></h2>
-    <div class="section-sub"><span class="bi"><span class="en">Archive a fully interactive HTML copy</span><span class="sep"> # </span><span class="vi">Lưu trữ bản HTML tương tác đầy đủ</span></span></div>
+    <div class="section-sub"><span class="bi"><span class="en">Archive a fully interactive HTML copy directly to your chosen folder</span><span class="sep"> # </span><span class="vi">Lưu trữ bản HTML tương tác trực tiếp vào thư mục bạn chọn</span></span></div>
   </div>
 </div>
 
-  <p class="para"><span class="bi"><span class="en">The <strong>💾 Save</strong> button exports a standalone HTML file with all data and photos embedded — no internet needed to view it later.</span><span class="sep"> # </span><span class="vi">Nút <strong>💾 Lưu</strong> xuất file HTML độc lập chứa toàn bộ dữ liệu và ảnh — không cần internet để mở lại.</span></span></p>
+  <p class="para"><span class="bi"><span class="en">The <strong>💾 Save</strong> button writes a standalone HTML file — all data and photos embedded — directly into a folder on your computer. No internet needed to open it later. Works on <strong>Chrome / Edge</strong> desktop; other browsers download to the default Downloads folder instead.</span><span class="sep"> # </span><span class="vi">Nút <strong>💾 Lưu</strong> ghi file HTML độc lập — toàn bộ dữ liệu và ảnh được nhúng vào — trực tiếp vào thư mục trên máy tính. Không cần internet để mở lại. Hoạt động trên <strong>Chrome / Edge</strong> desktop; trình duyệt khác sẽ tải về thư mục Downloads mặc định.</span></span></p>
 
   <ul class="steps-list">
     <li class="step-item">
-  <span class="step-num">1</span>
-  <span class="bi"><span class="en">Complete all 4 tabs before saving</span><span class="sep"> # </span><span class="vi">Hoàn thành cả 4 tab trước khi lưu</span></span>
-</li>
+      <span class="step-num">1</span>
+      <span class="bi"><span class="en"><strong>First save:</strong> Click 💾 Save — a folder picker dialog appears. Select the folder where you want all QC reports stored (e.g. <code>Z:\QC Reports\2026\</code>). The folder is remembered for the rest of the session.</span><span class="sep"> # </span><span class="vi"><strong>Lần đầu lưu:</strong> Nhấn 💾 Lưu — hộp thoại chọn thư mục xuất hiện. Chọn thư mục để lưu tất cả báo cáo (ví dụ <code>Z:\QC Reports\2026\</code>). Thư mục được ghi nhớ cho toàn bộ phiên làm việc.</span></span>
+    </li>
     <li class="step-item">
-  <span class="step-num">2</span>
-  <span class="bi"><span class="en">Click 💾 Save in the bottom action bar</span><span class="sep"> # </span><span class="vi">Nhấn 💾 Lưu ở thanh phía dưới</span></span>
-</li>
+      <span class="step-num">2</span>
+      <span class="bi"><span class="en"><strong>Subsequent saves:</strong> Click 💾 Save again — the file is written directly to the same folder, no dialog. The filename is generated automatically: <code>YYYYMMDD_Quality_report_NNN.html</code>.</span><span class="sep"> # </span><span class="vi"><strong>Các lần lưu tiếp theo:</strong> Nhấn 💾 Lưu — file được ghi thẳng vào thư mục đã chọn, không hỏi lại. Tên file tự động theo dạng <code>YYYYMMDD_Quality_report_NNN.html</code>.</span></span>
+    </li>
     <li class="step-item">
-  <span class="step-num">3</span>
-  <span class="bi"><span class="en">Browser downloads YYYYMMDD_QUALITY REPORT_XX.html</span><span class="sep"> # </span><span class="vi">Trình duyệt tải về file HTML với tên tự động</span></span>
-</li>
+      <span class="step-num">3</span>
+      <span class="bi"><span class="en"><strong>File already exists (same report number):</strong> A dialog appears with three options — <em>Overwrite</em> (replace the existing file), <em>New Report</em> (cancel save — change the report number first, then save again), or <em>Cancel</em>.</span><span class="sep"> # </span><span class="vi"><strong>File đã tồn tại (cùng số báo cáo):</strong> Hộp thoại xuất hiện với 3 lựa chọn — <em>Lưu đè</em> (ghi đè file cũ), <em>Báo cáo mới</em> (huỷ lưu — đổi số báo cáo rồi lưu lại), hoặc <em>Huỷ</em>.</span></span>
+    </li>
     <li class="step-item">
-  <span class="step-num">4</span>
-  <span class="bi"><span class="en">Open the saved file anytime to view or share</span><span class="sep"> # </span><span class="vi">Mở file bất cứ lúc nào để xem hoặc chia sẻ</span></span>
-</li>
+      <span class="step-num">4</span>
+      <span class="bi"><span class="en"><strong>Report number changed:</strong> If the report number differs from the last saved file, a confirmation dialog appears: <em>"Confirm create new report NNN?"</em> — confirm to save as a new report, or cancel to go back.</span><span class="sep"> # </span><span class="vi"><strong>Số báo cáo thay đổi:</strong> Nếu số báo cáo khác với lần lưu trước, hộp thoại xác nhận xuất hiện: <em>"Xác nhận tạo báo cáo NNN mới?"</em> — xác nhận để lưu báo cáo mới, hoặc huỷ để quay lại.</span></span>
+    </li>
+    <li class="step-item">
+      <span class="step-num">5</span>
+      <span class="bi"><span class="en"><strong>Opening a saved report:</strong> Open the saved <code>.html</code> file in Chrome / Edge — your data is fully restored for continued editing or printing.</span><span class="sep"> # </span><span class="vi"><strong>Mở lại báo cáo đã lưu:</strong> Mở file <code>.html</code> đã lưu trong Chrome / Edge — toàn bộ dữ liệu được khôi phục để tiếp tục chỉnh sửa hoặc in.</span></span>
+    </li>
   </ul>
 
   <div class="tip">
-    <span class="bi"><span class="en">💡 <strong>Archive tip:</strong> Store each report in a dated folder, e.g. <code>2026-09 QC Reports/</code> for easy retrieval.</span><span class="sep"> # </span><span class="vi">Lưu mỗi báo cáo trong thư mục theo tháng, ví dụ <code>2026-09 QC Reports/</code> để dễ tìm kiếm.</span></span>
+    <span class="bi"><span class="en">💡 <strong>Report number:</strong> Use the <strong>No.</strong> field in the header (digits and underscores only, e.g. <code>001</code>, <code>002</code>, <code>001_REV1</code>) to distinguish multiple reports for the same issue date. The number is included in the filename automatically.</span><span class="sep"> # </span><span class="vi">Dùng ô <strong>No.</strong> trong phần header (chỉ nhập số và dấu gạch dưới, ví dụ <code>001</code>, <code>002</code>, <code>001_REV1</code>) để phân biệt nhiều báo cáo trong cùng ngày. Số này tự động được đưa vào tên file.</span></span>
   </div>
 
   <div class="note">
-    <span class="bi"><span class="en">📌 <strong>Save vs Print:</strong> Save = interactive HTML archive for your records. Print = PDF snapshot for formal reporting. Use both.</span><span class="sep"> # </span><span class="vi"><strong>Lưu vs In:</strong> Lưu = HTML tương tác để lưu trữ nội bộ. In = PDF chính thức để gửi nhà máy/khách hàng. Dùng cả hai.</span></span>
+    <span class="bi"><span class="en">⚠️ <strong>Folder lost or moved:</strong> If the saved folder is renamed, moved, or deleted, a warning appears: <em>"Current folder is missing — please select a new save folder."</em> Simply click 💾 Save again to pick a new location.</span><span class="sep"> # </span><span class="vi">Nếu thư mục đã chọn bị đổi tên, di chuyển hoặc xoá, cảnh báo sẽ xuất hiện: <em>"Thư mục hiện tại đã bị mất, vui lòng chọn thư mục lưu trữ khác."</em> Nhấn 💾 Lưu lại để chọn thư mục mới.</span></span>
+  </div>
+
+  <div class="note">
+    <span class="bi"><span class="en">📌 <strong>Save vs Print:</strong> Save = interactive HTML archive for editing and internal records. Print = PDF snapshot for formal reporting to factory / customer. Use both.</span><span class="sep"> # </span><span class="vi"><strong>Lưu vs In:</strong> Lưu = HTML tương tác để lưu trữ nội bộ và chỉnh sửa tiếp. In = PDF chính thức để gửi nhà máy / khách hàng. Nên dùng cả hai.</span></span>
   </div>
 </div>
 
@@ -506,7 +514,7 @@ figcaption{background:var(--beige-dark);padding:8px 14px;font-size:13px;border-t
     <span class="vi">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</span>
   </span>
   <a href="mailto:Hieu.tran@boka.ltd">Hieu.tran@boka.ltd</a>
-  <br><span style="font-size:12px;color:var(--vi);margin-top:6px;display:inline-block;">© 2026 Boka · Boka_QC_UserGuide v1.3</span>
+  <br><span style="font-size:12px;color:var(--vi);margin-top:6px;display:inline-block;">© 2026 Boka · Boka_QC_UserGuide v1.4</span>
 </div>
 
 </body>

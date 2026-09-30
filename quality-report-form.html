@@ -46,6 +46,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
   color:#2c1a0e;outline:none;transition:.2s
 }
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown);box-shadow:0 0 0 2px rgba(92,74,50,.12)}
+/* Normalize all slide-meta controls to same height so labels stay on one row */
+.slide-meta input,.slide-meta select{height:30px}
 .form-group textarea{resize:vertical;min-height:60px}
 
 /* ── SEVERITY BUTTONS ── */
@@ -337,7 +339,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
       </div>
       <div class="form-group" style="max-width:108px">
         <label>Report No. <em># Số</em></label>
-        <input type="text" id="hdr-no" placeholder="001">
+        <input type="text" id="hdr-no" placeholder="001" oninput="this.value=this.value.replace(/[^0-9_]/g,'')">
       </div>
       <div class="form-group" style="flex:11">
         <label>Product / Item <em># Sản phẩm</em></label>
@@ -493,6 +495,35 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
   <button class="btn btn-secondary" onclick="openSettings()" title="Settings / Cài đặt" style="padding:9px 13px">⚙️</button>
 </div>
 
+<!-- ══ SAVE CONFLICT MODAL ══ -->
+<div id="save-conflict-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;padding:28px 32px;width:min(90vw,420px);box-shadow:0 8px 40px rgba(0,0,0,.3);text-align:center">
+    <div style="font-size:28px;margin-bottom:10px">⚠️</div>
+    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:8px">File đã tồn tại <em style="font-weight:400;font-size:12px;color:#9a8070"># File exists</em></div>
+    <div id="save-conflict-fname" style="font-size:12px;color:#7a6050;background:#fdf9f3;padding:8px 12px;border-radius:6px;margin-bottom:14px;word-break:break-all;border:1px solid #e0d0bc"></div>
+    <div style="font-size:13px;color:#5c4a32;margin-bottom:22px">Lưu đè lên file cũ, hay tạo báo cáo mới?<br><em style="font-size:11px;color:#9a8070"># Overwrite existing file, or create a new report?</em></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button id="save-conflict-overwrite" class="btn btn-primary" style="min-width:100px">💾 Lưu đè <em style="font-style:normal;font-size:10px"># Overwrite</em></button>
+      <button id="save-conflict-new" class="btn" style="min-width:100px;background:#e8f4e8;color:#2d6a2d;border:1px solid #aad4aa;font-family:inherit;cursor:pointer;border-radius:4px;padding:8px 14px;font-size:14px">📄 Báo cáo mới <em style="font-style:normal;font-size:10px"># New</em></button>
+      <button id="save-conflict-cancel" class="btn" style="min-width:100px;background:#f5ede0;color:#5c4a32;border:1px solid #c8b48a">✕ Huỷ <em style="font-style:normal;font-size:10px"># Cancel</em></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NEW REPORT CONFIRM MODAL ══ -->
+<div id="new-report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;padding:28px 32px;width:min(90vw,380px);box-shadow:0 8px 40px rgba(0,0,0,.3);text-align:center">
+    <div style="font-size:28px;margin-bottom:10px">📄</div>
+    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:10px">Tạo báo cáo mới? <em style="font-weight:400;font-size:12px;color:#9a8070"># New report</em></div>
+    <div style="font-size:13px;color:#5c4a32;margin-bottom:6px">Xác nhận tạo báo cáo</div>
+    <div id="new-report-no" style="font-size:20px;font-weight:900;color:#3c2a1a;background:#fdf9f3;padding:8px 16px;border-radius:6px;margin-bottom:20px;border:1px solid #e0d0bc;display:inline-block;min-width:80px"></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button id="new-report-confirm" class="btn btn-primary" style="min-width:110px">✓ Xác nhận</button>
+      <button id="new-report-cancel" class="btn" style="min-width:110px;background:#f5ede0;color:#5c4a32;border:1px solid #c8b48a">✕ Huỷ</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ SETTINGS MODAL ══ -->
 <div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:10px;padding:24px;width:min(92vw,520px);box-shadow:0 8px 40px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
@@ -534,12 +565,12 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
       <div style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
         📁 Thư mục lưu local <em style="text-transform:none;font-weight:400"># Local save folder</em>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span id="settings-local-folder" style="font-size:13px;color:#3c2a1a;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">(chưa chọn)</span>
+      <span id="settings-local-folder" style="font-size:13px;color:#3c2a1a;font-weight:700;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px">(Thư mục sẽ được chọn khi bạn lưu lần đầu)</span>
+      <div id="settings-folder-controls" style="display:none;align-items:center;gap:10px">
         <button onclick="changeLocalFolder()" style="padding:5px 12px;border-radius:4px;border:1px solid #c8b89a;background:#fff;font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap;color:#5c4a32;font-weight:700">📁 Đổi thư mục</button>
         <button onclick="clearLocalFolder()" title="Xoá thư mục đã nhớ" style="padding:5px 8px;border-radius:4px;border:1px solid #e0b0a0;background:#fff4f2;font-family:inherit;font-size:12px;cursor:pointer;color:#c0392b">✕</button>
       </div>
-      <div style="font-size:11px;color:#9a8070;margin-top:6px">Chọn 1 lần, tự động lưu vào đây mỗi lần sau (không cần chọn lại). Chrome/Edge only.</div>
+      <div style="font-size:11px;color:#9a8070;margin-top:6px">Lưu lần đầu sẽ hỏi vị trí thư mục. Sau đó tự động lưu vào cùng thư mục. Chrome/Edge only.</div>
     </div>
 
     <!-- User Guide URL -->
@@ -766,7 +797,29 @@ let activeIssueId = null;
 const APPS_SCRIPT_URL_DEFAULT = ''; // hardcoded fallback (leave empty; configure in Settings)
 let currentCloudId = null;  // ID file trên Drive của report đang mở
 let _allReports = [];       // cache for search/filter
-let _localDirHandle = null; // active directory handle for local history
+let _localDirHandle = null;  // active directory handle for local history
+let _savedDirHandle = null;  // in-memory cache of the persisted save folder (permission granted this session)
+let _savedDirFromDB = null;  // handle pre-loaded from IndexedDB at startup
+let _lastSavedFname = null;  // filename of the last successful save this session (detects report-no change)
+
+// At startup, load the saved folder handle from IndexedDB and use queryPermission()
+// (no user gesture needed) to check if Chrome still has the permission.
+// If already 'granted' (rare after reload but possible), cache it immediately so
+// Save works with zero prompts.  If 'prompt', store the handle for showing the
+// folder name in UI and Settings — the user will need one OS picker click per
+// session (showDirectoryPicker on the Save button, gesture still intact).
+(async()=>{
+  try{
+    const h=await dbGet('saveDir');
+    if(!h)return;
+    _savedDirFromDB=h;
+    try{
+      const p=await h.queryPermission({mode:'readwrite'});
+      if(p==='granted')_savedDirHandle=h;          // great, no dialog needed
+      else if(p==='denied'){await dbDel('saveDir');_savedDirFromDB=null;} // user revoked
+    }catch(_){ /* queryPermission may throw on very stale handles; ignore */ }
+  }catch(_){}
+})();
 
 function getScriptUrl(){
   try{return localStorage.getItem('boka_script_url')||APPS_SCRIPT_URL_DEFAULT;}catch(_){return APPS_SCRIPT_URL_DEFAULT;}
@@ -887,12 +940,32 @@ function renderIssueSelector(){
       ${issueTypes.map(it=>{
         const active=it.id===activeIssueId;
         if(it._editing){
+          const existingIds=new Set(issueTypes.filter(x=>!x._editing).map(x=>x.id));
+          let optHtml='<option value="" disabled selected>-- Chọn loại lỗi --</option>';
+          Object.keys(TAXONOMY).forEach(cat=>{
+            // Bilingual optgroup: "EN PART / VI PART" (strip trailing code like "(PACK)")
+            const parts=cat.split('/');
+            const catEN=parts[0].trim();
+            const catVI=(parts[1]||'').replace(/\([^)]+\)\s*$/,'').trim();
+            const catLabel=catVI?`${catEN} / ${catVI}`:catEN;
+            const items=Object.entries(TAXONOMY[cat]).filter(([k])=>!existingIds.has(k));
+            if(!items.length)return;
+            optHtml+=`<optgroup label="${catLabel}">`;
+            items.forEach(([k,v])=>{optHtml+=`<option value="${k}">${typeDisplay(v,false)}</option>`;});
+            optHtml+='</optgroup>';
+          });
+          optHtml+='<option value="__custom__">＋ Tùy chỉnh…</option>';
           return `<div style="display:flex;align-items:center;border-radius:20px;border:2px solid #5c4a32;overflow:hidden;background:#fdfaf5">
-            <input id="new-issue-input" type="text" placeholder="Tên loại lỗi…" value="${esc(it.label)}"
-              style="border:none;outline:none;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:700;color:#5c4a32;background:transparent;width:160px"
+            <select id="new-issue-select" onchange="handleIssueSelectChange('${it.id}',this.value)"
+              style="border:none;outline:none;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:700;color:#5c4a32;background:transparent;max-width:340px;cursor:pointer">
+              ${optHtml}
+            </select>
+            <input id="new-issue-input" type="text" placeholder="Tên tùy chỉnh…" value=""
+              style="display:none;border:none;border-left:1px solid #c8b89a;outline:none;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:700;color:#5c4a32;background:transparent;width:150px"
               onkeydown="if(event.key==='Enter')confirmNewIssueType('${it.id}')"
               onblur="confirmNewIssueType('${it.id}')">
-            <button onclick="confirmNewIssueType('${it.id}')" style="padding:5px 10px;border:none;border-left:1px solid #c8b89a;background:#f0e8d8;color:#5c4a32;cursor:pointer;font-size:11px;font-weight:700">✓</button>
+            <button id="new-issue-confirm-btn" onclick="confirmNewIssueType('${it.id}')" style="display:none;padding:5px 10px;border:none;border-left:1px solid #c8b89a;background:#f0e8d8;color:#5c4a32;cursor:pointer;font-size:11px;font-weight:700">✓</button>
+            <button onclick="cancelNewIssueType('${it.id}')" style="padding:5px 8px;border:none;border-left:1px solid #c8b89a;background:transparent;color:#c0392b;cursor:pointer;font-size:11px">✕</button>
           </div>`;
         }
         return `<div style="display:flex;align-items:center;border-radius:20px;border:2px solid ${active?'#5c4a32':'#c8b89a'};overflow:hidden;background:${active?'#5c4a32':'transparent'}">
@@ -914,10 +987,37 @@ function addIssueType(){
   const id='custom-'+Date.now();
   issueTypes.push({id,label:'',showFishbone:false,_editing:true});
   renderIssueSelector();
-  setTimeout(()=>{const inp=document.getElementById('new-issue-input');if(inp)inp.focus();},50);
+  setTimeout(()=>{const sel=document.getElementById('new-issue-select');if(sel)sel.focus();},50);
+}
+
+function handleIssueSelectChange(tempId,val){
+  if(val==='__custom__'){
+    const inp=document.getElementById('new-issue-input');
+    const btn=document.getElementById('new-issue-confirm-btn');
+    if(inp){inp.style.display='';inp.focus();}
+    if(btn)btn.style.display='';
+    return;
+  }
+  if(!val)return;
+  const it=issueTypes.find(x=>x.id===tempId);
+  if(!it)return;
+  let label=val;
+  Object.keys(TAXONOMY).forEach(cat=>{if(TAXONOMY[cat][val])label=typeDisplay(TAXONOMY[cat][val],false);});
+  it.id=val;
+  it.label=label;
+  delete it._editing;
+  setActiveIssue(val);
+}
+
+function cancelNewIssueType(id){
+  issueTypes=issueTypes.filter(x=>x.id!==id);
+  renderIssueSelector();
 }
 
 function confirmNewIssueType(id){
+  const sel=document.getElementById('new-issue-select');
+  const selVal=sel?sel.value:'';
+  if(selVal&&selVal!=='__custom__')return; // already handled by onchange
   const inp=document.getElementById('new-issue-input');
   const label=inp?inp.value.trim():'';
   const it=issueTypes.find(x=>x.id===id);
@@ -1451,7 +1551,7 @@ function buildSlideMeta(slide){
       </select>
     </div>
     ${wcOtherField}
-    <div class="form-group" style="flex:0 0 auto;width:130px;margin-left:20px">
+    <div class="form-group" style="flex:0 0 auto;width:130px;margin-left:23px">
       <label style="${LB}">Issue Date <em># Ngày phát sinh</em></label>
       <input type="date" style="width:130px;font-size:12px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
     </div>
@@ -2108,10 +2208,43 @@ function pgFtr(pn,fname){
 /* ══════════════════════════════════════
    SAVE (File System Access API)
 ══════════════════════════════════════ */
+// Returns 'overwrite' | 'new' | 'cancel'
+function confirmSaveChoice(fname){
+  return new Promise(resolve=>{
+    const modal=document.getElementById('save-conflict-modal');
+    document.getElementById('save-conflict-fname').textContent=fname;
+    modal.style.display='flex';
+    const btnOvr=document.getElementById('save-conflict-overwrite');
+    const btnNew=document.getElementById('save-conflict-new');
+    const btnCan=document.getElementById('save-conflict-cancel');
+    function cleanup(){
+      modal.style.display='none';
+      btnOvr.onclick=null;btnNew.onclick=null;btnCan.onclick=null;
+    }
+    btnOvr.onclick=()=>{cleanup();resolve('overwrite');};
+    btnNew.onclick=()=>{cleanup();resolve('new');};
+    btnCan.onclick=()=>{cleanup();resolve('cancel');};
+  });
+}
+
+// Returns true (confirm) | false (cancel)
+function confirmNewReport(no){
+  return new Promise(resolve=>{
+    const modal=document.getElementById('new-report-modal');
+    document.getElementById('new-report-no').textContent=no;
+    modal.style.display='flex';
+    const btnYes=document.getElementById('new-report-confirm');
+    const btnNo=document.getElementById('new-report-cancel');
+    function cleanup(){modal.style.display='none';btnYes.onclick=null;btnNo.onclick=null;}
+    btnYes.onclick=()=>{cleanup();resolve(true);};
+    btnNo.onclick=()=>{cleanup();resolve(false);};
+  });
+}
+
 async function saveReport(){
   const fname=getFileName();
 
-  // ── A. Build HTML snapshot (shared by both save paths) ──
+  // ── A. Build HTML snapshot ──
   const state=collectState();
   const stateJson=JSON.stringify(state);
   const stateEl=document.getElementById('__boka_saved_state__');
@@ -2123,60 +2256,117 @@ async function saveReport(){
   stateEl.textContent='null';
   renderSlides();renderIssueSelector();renderRCForm();renderCapaForm();renderFishbone();
 
-  // ── B. Try File System Access API (desktop Chrome / Edge) ──
+  // ── B. File System Access API (desktop Chrome / Edge) ──
   if(window.showDirectoryPicker){
     let dir=null;
-    const saved=await dbGet('saveDir');
-    if(saved){
-      try{
-        const perm=await saved.requestPermission({mode:'readwrite'});
-        if(perm==='granted')dir=saved;
-        else{
-          await dbDel('saveDir');
-          toast('📁 Quyền truy cập thư mục bị từ chối.\nVui lòng chọn lại thư mục lưu.');
-        }
-      }catch(_){
-        await dbDel('saveDir'); // stale / invalid handle — folder may have been moved or deleted
-        toast('📁 Thư mục lưu không còn hợp lệ (đã đổi tên/xóa?).\nVui lòng chọn lại thư mục.');
-      }
+
+    // B1. Use cached in-session handle (no activation needed)
+    if(_savedDirHandle){
+      dir=_savedDirHandle;
     }
+
+    // B2. Check IDB handle via queryPermission (safe — no activation consumed)
+    if(!dir&&_savedDirFromDB){
+      try{
+        const p=await _savedDirFromDB.queryPermission({mode:'readwrite'});
+        if(p==='granted'){dir=_savedDirFromDB;_savedDirHandle=dir;}
+        else if(p==='denied'){await dbDel('saveDir');_savedDirFromDB=null;}
+        // 'prompt' → fall through to picker
+      }catch(_){}
+    }
+
+    // B3. No valid dir — open folder picker.
+    // showDirectoryPicker() is the FIRST activation-consuming call, so Chrome's
+    // user-gesture from the button click is still fully intact here.
     if(!dir){
       try{
         dir=await window.showDirectoryPicker({mode:'readwrite'});
         await dbSet('saveDir',dir);
+        _savedDirHandle=dir;
+        _savedDirFromDB=dir;
       }catch(e){
-        if(e.name==='AbortError')return; // user cancelled — stop here
-        // showDirectoryPicker failed on this device — fall through to blob download
+        if(e.name==='AbortError')return; // user cancelled
+        // Not supported or blocked — fall through to blob
       }
     }
+
     if(dir){
       try{
-        toast('💾 Đang lưu…');
+        // Check file existence (no create yet)
+        let fileExists=false;
+        try{
+          const existFh=await dir.getFileHandle(fname); // throws NotFoundError if absent
+          const existFile=await existFh.getFile();
+          fileExists=existFile.size>0;
+        }catch(_){fileExists=false;}
+
+        // Get writable BEFORE any modal — activation window still open
         const fh=await dir.getFileHandle(fname,{create:true});
         const fw=await fh.createWritable();
+
+        // ── Workflow decision ──
+        if(fileExists){
+          // File exists: ask overwrite or new report?
+          const choice=await confirmSaveChoice(fname);
+          if(choice==='cancel'){await fw.close();return;}
+          if(choice==='new'){
+            await fw.close(); // discard — no write
+            toast('📄 Đã huỷ. Hãy đổi số báo cáo rồi lưu lại.');
+            return;
+          }
+          // 'overwrite' → fall through to write
+        } else if(_lastSavedFname&&_lastSavedFname!==fname){
+          // Different filename from last save → confirm new report
+          const reportNo=document.getElementById('hdr-no').value||'001';
+          const ok=await confirmNewReport(reportNo);
+          if(!ok){await fw.close();return;}
+        }
+
+        // Write the file
         await fw.write(html);
         await fw.close();
-        // Companion JSON
-        const jsonFname=fname.replace(/\.html$/,'.json');
-        const jfh=await dir.getFileHandle(jsonFname,{create:true});
-        const jfw=await jfh.createWritable();
-        await jfw.write(stateJson);
-        await jfw.close();
+        _lastSavedFname=fname;
+        _savedDirHandle=dir;
         _localDirHandle=dir;
-        const _hdr=state.hdr||{};
-        await updateLocalIndex(dir,{
-          htmlfile:fname,jsonfile:jsonFname,
-          no:_hdr.no||getReportNo(),product:_hdr.product||'',
-          customer:_hdr.customer||'',piwo:_hdr.piwo||'',
-          date:_hdr.date||todayStr(),severity:state.severity||'',
-          savedAt:new Date().toISOString(),source:'local'
-        });
-        await writeLog(dir,fname);
+
+        // ✅ Show success immediately — before any aux writes that might fail
         toast(`✅ Đã lưu thành công!\n${fname}\n↩ Mở lại trong Chrome để tiếp tục chỉnh sửa`);
+
+        // Auxiliary: companion JSON (isolated — never blocks success)
+        try{
+          const jfh=await dir.getFileHandle(fname.replace(/\.html$/,'.json'),{create:true});
+          const jfw=await jfh.createWritable();
+          await jfw.write(stateJson);
+          await jfw.close();
+        }catch(_){}
+
+        // Auxiliary: update local index
+        const _hdr=state.hdr||{};
+        try{
+          await updateLocalIndex(dir,{
+            htmlfile:fname,jsonfile:fname.replace(/\.html$/,'.json'),
+            no:_hdr.no||getReportNo(),product:_hdr.product||'',
+            customer:_hdr.customer||'',piwo:_hdr.piwo||'',
+            date:_hdr.date||todayStr(),severity:state.severity||'',
+            savedAt:new Date().toISOString(),source:'local'
+          });
+        }catch(_){}
+
+        // Auxiliary: write log
+        try{await writeLog(dir,fname);}catch(_){}
+
         return; // done
+
       }catch(e){
         if(e.name==='AbortError')return;
-        await dbDel('saveDir'); // something went wrong — clear handle, fall through to blob
+        if(e.name==='NotFoundError'||e.message?.toLowerCase().includes('stale')){
+          await dbDel('saveDir');
+          _savedDirHandle=null;_savedDirFromDB=null;
+          toast('⚠️ Thư mục hiện tại đã bị mất, vui lòng chọn thư mục lưu trữ khác');
+          return;
+        }
+        toast('❌ Không thể lưu: '+e.message);
+        // Fall through to blob
       }
     }
   }
@@ -2804,7 +2994,15 @@ async function openSettings(){
   }catch(_){}
   // Show saved folder name (async)
   const handle=await dbGet('saveDir');
-  document.getElementById('settings-local-folder').textContent=handle?('📁 '+handle.name):'(chưa chọn)';
+  const folderSpan=document.getElementById('settings-local-folder');
+  const folderControls=document.getElementById('settings-folder-controls');
+  if(handle){
+    folderSpan.textContent='📁 '+handle.name;
+    if(folderControls)folderControls.style.display='flex';
+  }else{
+    folderSpan.textContent='(Thư mục sẽ được chọn khi bạn lưu lần đầu)';
+    if(folderControls)folderControls.style.display='none';
+  }
   document.getElementById('settings-modal').style.display='flex';
 }
 function closeSettings(){
@@ -2836,14 +3034,20 @@ async function changeLocalFolder(){
   try{
     const dir=await window.showDirectoryPicker({mode:'readwrite'});
     await dbSet('saveDir',dir);
+    _savedDirHandle=dir;   // cache in-memory so next Save needs no requestPermission
+    _savedDirFromDB=dir;
     document.getElementById('settings-local-folder').textContent='📁 '+dir.name;
+    const fc=document.getElementById('settings-folder-controls');
+    if(fc)fc.style.display='flex';
     toast('✅ Đã chọn thư mục: '+dir.name);
   }catch(e){if(e.name!=='AbortError')toast('❌ '+e.message);}
 }
 async function clearLocalFolder(){
   await dbDel('saveDir');
-  _localDirHandle=null;
-  document.getElementById('settings-local-folder').textContent='(chưa chọn)';
+  _localDirHandle=null; _savedDirHandle=null; _savedDirFromDB=null;
+  document.getElementById('settings-local-folder').textContent='(Thư mục sẽ được chọn khi bạn lưu lần đầu)';
+  const fc=document.getElementById('settings-folder-controls');
+  if(fc)fc.style.display='none';
   document.getElementById('btn-local-history').style.display='none';
   toast('🗑 Đã xoá thư mục đã nhớ.');
 }
