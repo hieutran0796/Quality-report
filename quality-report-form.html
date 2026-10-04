@@ -1064,10 +1064,14 @@ function _doInit(){
 }
 
 // Hand-off from the OCA Tool's "Send to CAPA" button (Checklist screen): it opens this
-// page in a new tab with header fields + a structured `items` list as URL query params.
-// We only pre-fill text here — Category/Type for each photo slot is left for the auditor
-// to pick from this tool's own taxonomy (no attempt to auto-map OCA's checklist groups to
-// it), and no photos come across since OCA can't hand us image data through a URL.
+// page in a new tab with header fields, a structured `items` list and the Product List as
+// URL query params. Category/Type per defect photo is left for the auditor to pick here
+// (this tool's own taxonomy) — no attempt to auto-map OCA's checklist groups to it. Photos
+// can't fit in a URL, so once slots exist for them this page asks the OCA tab (its
+// `window.opener`) for the actual image data over postMessage — see the listener below.
+let _capaSlotPlan = []; // [{slideId, pi, itemIndex, photoIdx}] — filled once, read by the
+                         // postMessage handler below to know which slot each photo belongs in.
+
 function applyCapaHandoffFromUrl(){
   let params;
   try { params = new URLSearchParams(window.location.search); } catch(_) { return; }
@@ -1079,30 +1083,81 @@ function applyCapaHandoffFromUrl(){
   setVal('hdr-piwo', params.get('piwo'));
   setVal('hdr-customer', params.get('customer'));
   setVal('hdr-reporter', params.get('reporter'));
+  setVal('hdr-qty-insp', params.get('qtyinsp'));
+  setVal('hdr-qty-def', params.get('qtydef'));
   const desc = params.get('desc');
   if (desc) setVal('hdr-desc', desc);
 
   const sev = params.get('severity');
   if (sev) setSeverity(sev);
 
+  // Product List: carried over as-is from OCA's own Setup screen so it doesn't need
+  // retyping here. Each row also becomes the match target for `sku` below, so a created
+  // slide can link to it (and inherit its Order Qty) instead of using free-text product name.
+  let matchedProductId = null;
+  const productsRaw = params.get('products');
+  const skuParam = params.get('sku') || '';
+  if (productsRaw) {
+    try {
+      const products = JSON.parse(productsRaw);
+      if (Array.isArray(products) && products.length) {
+        products.forEach(p => {
+          const id = productIdCounter++;
+          if (skuParam && p.code === skuParam) matchedProductId = id;
+          productList.push({ id, code: p.code || '', name: p.name || '', order: p.order || '', qty: p.qty || '' });
+        });
+        renderProductList();
+      }
+    } catch(_) {}
+  }
+
   const itemsRaw = params.get('items');
   if (itemsRaw) {
     try {
       const items = JSON.parse(itemsRaw);
       if (Array.isArray(items) && items.length) {
-        // Reuse the one blank slide _doInit() already created (3 empty photo slots),
-        // adding more 3-slot slides only if there are more failed items than that.
-        while (slides.length * 3 < items.length) addSlide();
+        // One slot per item normally, but an item with more than one photo needs one slot
+        // per photo (each slide only holds 3 slots) — build a flat plan up front so we know
+        // exactly how many slides are needed and which slot maps to which (item, photo).
+        const plan = [];
+        items.forEach((it, i) => {
+          const n = Math.max(1, it.photoCount || 0);
+          for (let p = 0; p < n; p++) plan.push({ itemIndex: i, photoIdx: it.photoCount ? p : null });
+        });
+        while (slides.length * 3 < plan.length) addSlide();
+
+        _capaSlotPlan = [];
+        const slideItemIdx = {}; // slideId -> Set of itemIndex, for this slide's Defect Qty
         let idx = 0;
         outer:
         for (const slide of slides) {
           for (let pi = 0; pi < slide.slots.length; pi++) {
-            if (idx >= items.length) break outer;
-            const it = items[idx++] || {};
-            slide.slots[pi].caption = `[${it.group || ''}${it.code ? ' - ' + it.code : ''}] ${it.en || ''}${it.vi ? ' / ' + it.vi : ''}${it.note ? ' — ' + it.note : ''}`.trim();
+            if (idx >= plan.length) break outer;
+            const entry = plan[idx++];
+            const it = items[entry.itemIndex] || {};
+            let caption = `[${it.group || ''}${it.code ? ' - ' + it.code : ''}] ${it.en || ''}${it.vi ? ' / ' + it.vi : ''}${it.note ? ' — ' + it.note : ''}`.trim();
+            if (it.photoCount > 1) caption += ` (${entry.photoIdx + 1}/${it.photoCount})`;
+            slide.slots[pi].caption = caption;
+            _capaSlotPlan.push({ slideId: slide.id, pi, itemIndex: entry.itemIndex, photoIdx: entry.photoIdx });
+            (slideItemIdx[slide.id] = slideItemIdx[slide.id] || new Set()).add(entry.itemIndex);
           }
         }
+
+        // Per-slide metadata: same product/date for every slide created here (they're all
+        // from the same carton hand-off); Inspected Qty only goes on the first slide so the
+        // Product List's own auto-summed column doesn't double-count it per slide, while
+        // Defect Qty is the number of distinct items that actually landed on that slide.
+        slides.forEach((slide, si) => {
+          if (!slideItemIdx[slide.id]) return;
+          if (params.get('date')) slide.date = params.get('date');
+          if (matchedProductId) slide.productRef = matchedProductId;
+          else if (params.get('sku')) slide.productName = params.get('sku');
+          slide.qtyDef = String(slideItemIdx[slide.id].size);
+          if (si === 0 && params.get('qtyinsp')) slide.qtyInsp = params.get('qtyinsp');
+        });
+
         renderSlides();
+        refreshProductDropdowns();
       }
     } catch(_) {}
   }
@@ -1113,7 +1168,33 @@ function applyCapaHandoffFromUrl(){
   if (issueBtn) switchTab(issueBtn, 'issue');
 
   toast('📥 Đã nhận dữ liệu từ OCA Tool — chọn Category/Type cho từng ảnh lỗi.\nReceived data from OCA Tool — pick Category/Type for each defect photo.');
+
+  // Tell the OCA tab (if this was opened from it) we're ready to receive photo data — it
+  // can't be included in the URL, so it waits for this signal before posting it across.
+  if (_capaSlotPlan.some(s => s.photoIdx !== null) && window.opener) {
+    try { window.opener.postMessage({ type: 'oca-capa-ready' }, '*'); } catch(_) {}
+  }
 }
+
+// Receives the actual photo data the OCA tab couldn't fit in the URL, once it answers our
+// "oca-capa-ready" ping above. `photos` is { itemIndex: [dataUrl, ...] }, aligned with the
+// `items` list from the URL — _capaSlotPlan says which slot each (item, photo) pair landed in.
+window.addEventListener('message', (ev) => {
+  const d = ev.data;
+  if (!d || d.type !== 'oca-capa-photos' || !d.photos) return;
+  let changed = false;
+  _capaSlotPlan.forEach(ref => {
+    if (ref.photoIdx === null) return;
+    const arr = d.photos[ref.itemIndex];
+    const src = arr && arr[ref.photoIdx];
+    if (!src) return;
+    const slide = slides.find(s => s.id === ref.slideId);
+    if (!slide || !slide.slots[ref.pi]) return;
+    slide.slots[ref.pi].src = src;
+    changed = true;
+  });
+  if (changed) renderSlides();
+});
 
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function maskDate(v){const d=v.replace(/\D/g,'').slice(0,6);if(d.length>4)return d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4);if(d.length>2)return d.slice(0,2)+'-'+d.slice(2);return d;}
