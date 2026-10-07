@@ -29,6 +29,16 @@ em{font-weight:400;font-style:italic}
 label em,.card-title em{font-weight:400;font-style:italic;color:var(--vi)}
 body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14px;overflow-x:hidden;max-width:100vw}
 
+/* Mobile browsers (Chrome/Safari) auto-zoom the whole page when a focused
+   input/select/textarea computes to font-size < 16px. That is what made the
+   app appear "stuck" at a zoomed-in width on phones — not an actual layout
+   bug. Force every field to >=16px on phone widths to stop that auto-zoom;
+   the field keeps its compact look since only this media query's font-size
+   changes, padding/width stay as set elsewhere. */
+@media(max-width:760px){
+  input,select,textarea{font-size:16px!important}
+}
+
 /* ── HEADER BAR ── */
 .app-header{background:var(--brown);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
 .logo{font-size:22px;font-weight:900;color:var(--accent);letter-spacing:2px;font-family:var(--logo-font)}
@@ -84,6 +94,12 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .slide-remove-btn:hover{background:rgba(255,255,255,.3)}
 .slide-meta{background:#fdf9f3;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
 .slide-meta .form-group{min-width:160px}
+@media(max-width:760px){
+  .slide-meta{flex-direction:column!important;flex-wrap:wrap!important;overflow-x:visible!important;align-items:stretch!important;gap:10px}
+  .slide-meta .form-group{width:100%!important;min-width:0!important;max-width:none!important;margin-left:0!important;margin-right:0!important;flex:0 0 auto!important}
+  .slide-meta select,.slide-meta input{width:100%!important}
+  .slide-meta label{white-space:normal!important}
+}
 .slide-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;box-sizing:border-box;width:100%}
 
 /* ── PHOTO SLOT ── */
@@ -133,7 +149,8 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .rc-bone-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fdf9f3;cursor:pointer;user-select:none}
 .rc-bone-header:hover{background:#f5ede0}
 .rc-bone-icon{font-size:16px}
-.rc-bone-label{font-weight:700;font-size:12px;text-transform:uppercase;color:var(--brown);flex:1;letter-spacing:.5px}
+.rc-bone-label{font-weight:700;font-size:12px;text-transform:uppercase;color:var(--brown);flex:1;letter-spacing:.5px;min-width:0}
+.rc-bone-label .vi{white-space:normal}
 .rc-bone-count{font-size:11px;color:var(--accent);font-weight:700;background:rgba(200,169,110,.15);padding:2px 7px;border-radius:10px}
 .rc-bone-chevron{color:#999;transition:.2s;font-size:12px}
 .rc-bone-body{display:none;border-top:1px solid var(--border);padding:8px 12px;background:#fff}
@@ -142,20 +159,23 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .rc-item-row{display:flex;align-items:flex-start;gap:8px;padding:5px 4px;border-radius:4px;transition:.2s}
 .rc-item-row:hover{background:#fdf4e8}
 .rc-item-check{margin-top:2px;accent-color:var(--brown);width:14px;height:14px;cursor:pointer;flex-shrink:0}
-.rc-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1}
+.rc-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1;min-width:0}
 .rc-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
+.rc-item-text .vi{white-space:normal}
 .rc-item-note{margin-left:26px;margin-top:3px;display:none}
 .rc-item-note.show{display:block}
 .rc-item-note input{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
 
 /* ── CAPA ── */
 .capa-group-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.6px;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.capa-group-title .vi{white-space:normal}
 .capa-item{display:flex;flex-direction:column;margin-bottom:4px}
 .capa-item-row{display:flex;align-items:flex-start;gap:8px;padding:5px 4px;border-radius:4px;transition:.2s}
 .capa-item-row:hover{background:#fdf4e8}
 .capa-item-check{margin-top:2px;accent-color:var(--brown);width:14px;height:14px;cursor:pointer;flex-shrink:0}
-.capa-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1}
+.capa-item-text{font-size:12px;line-height:1.4;cursor:pointer;flex:1;min-width:0}
 .capa-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
+.capa-item-text .vi{white-space:normal}
 .capa-item-note{margin-left:26px;margin-top:3px;display:none}
 .capa-item-note.show{display:block}
 .capa-item-note input{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
@@ -222,8 +242,10 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;overflow-y:auto;padding:0}
 .preview-overlay.open{display:flex;flex-direction:column;align-items:center}
 #preview-overlay.open{overflow:hidden} /* page content scrolls/pans in its own inner pane below; the toolbar never moves */
-.preview-toolbar{background:#2c2c2c;color:#fff;padding:10px 20px;display:flex;gap:10px;align-items:center;width:100%;position:sticky;top:0;z-index:10;flex-shrink:0;box-sizing:border-box}
-#preview-title-bar{flex:1;font-size:13px;font-family:inherit;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-toolbar{background:#2c2c2c;color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;row-gap:8px;column-gap:10px;align-items:center;width:100%;position:sticky;top:0;z-index:10;flex-shrink:0;box-sizing:border-box}
+#preview-title-bar{flex:1 1 100%;font-size:13px;font-family:inherit;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.preview-toolbar-controls{flex:1 1 100%;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:nowrap}
+.preview-toolbar-controls .btn{white-space:nowrap}
 .preview-zoom-scroll{flex:1;min-height:0;width:100%;overflow:auto;touch-action:pan-x pan-y;display:flex;flex-direction:column;align-items:center}
 .preview-pages{padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
 
@@ -280,12 +302,25 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .sign-name{font-size:12px;color:#1a1a1a;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
 
 /* ── PRODUCT LIST (header) ── */
-.plist-table{width:100%;border-collapse:collapse;margin-top:8px}
-.plist-table th{background:#f5ede0;font-size:10px;font-weight:700;color:#5c4a32;text-transform:uppercase;letter-spacing:.5px;padding:5px 8px;border:1px solid var(--border);text-align:left}
+.plist-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.plist-table{width:100%;border-collapse:collapse;margin-top:8px;min-width:560px}
+.plist-table th{background:#f5ede0;font-size:9px;font-weight:700;color:#5c4a32;text-transform:uppercase;letter-spacing:.4px;padding:5px 6px;border:1px solid var(--border);text-align:left;white-space:normal;line-height:1.3}
+.plist-table th .vi{white-space:normal;display:block}
 .plist-table td{border:1px solid var(--border);padding:3px 5px;vertical-align:middle}
-.plist-table .num-col{color:#9a8070;font-size:11px;text-align:center;width:26px}
-.plist-table input{border:none;background:transparent;font-family:inherit;font-size:12px;width:100%;outline:none;color:#2c1a0e;padding:2px 2px}
+.plist-table .num-col{color:#9a8070;font-size:10px;text-align:center;width:24px}
+.plist-table input{border:none;background:transparent;font-family:inherit;font-size:11px;width:100%;outline:none;color:#2c1a0e;padding:2px 2px}
 .plist-table input:focus{background:#fdf9f3;border-radius:2px}
+@media(max-width:760px){
+  .plist-wrap{overflow-x:visible}
+  .plist-table{min-width:0;width:100%}
+  .plist-table thead{display:none}
+  .plist-table,.plist-table tbody,.plist-table tr,.plist-table td{display:block;width:100%;box-sizing:border-box}
+  .plist-table tr{border:1px solid var(--border);border-radius:8px;margin-bottom:10px;padding:6px 8px;position:relative;background:#fff}
+  .plist-table td{border:none;padding:6px 2px;display:flex;align-items:center;gap:8px}
+  .plist-table td[data-label]:not([data-label=""])::before{content:attr(data-label);flex:0 0 100px;font-size:10px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.3px}
+  .plist-table .num-col{display:none}
+  .plist-table td:last-child{position:absolute;top:4px;right:4px;width:auto;padding:0}
+}
 .plist-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:1px 5px;transition:.15s}
 .plist-del:hover{color:var(--ng)}
 .add-product-btn{margin-top:8px;padding:5px 14px;border:1.5px dashed var(--accent);background:none;border-radius:8px;color:var(--brown);font-family:inherit;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:.3px;transition:.2s}
@@ -429,19 +464,20 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 <!-- ── PRODUCT LIST ── -->
 <div class="card">
   <div class="card-title"><span class="en">Product List</span><span class="sep"> # </span><span class="vi">Danh sách sản phẩm</span></div>
-  <table class="plist-table">
+  <div class="plist-wrap"><table class="plist-table">
     <thead>
       <tr>
         <th class="num-col">#</th>
-        <th style="width:22%"><span class="en">Product Code</span><span class="sep"> # </span><span class="vi">Mã SP</span></th>
+        <th style="width:18%"><span class="en">Product Code</span><span class="sep"> # </span><span class="vi">Mã SP</span></th>
         <th><span class="en">Product Name</span><span class="sep"> # </span><span class="vi">Tên SP</span></th>
-        <th style="width:120px">PI / WO<br><span class="sep">#</span> <span class="vi">Đơn hàng</span></th>
-        <th style="width:100px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">ĐƠN HÀNG</em></th>
-        <th style="width:90px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">KIỂM</em></th>
-        <th style="width:36px"></th>
+        <th style="width:90px">PI / WO<br><span class="sep">#</span> <span class="vi">Đơn hàng</span></th>
+        <th style="width:72px">ORDER QTY<br><span class="sep">#</span> <span class="vi">SL Đơn hàng</span></th>
+        <th style="width:64px">INSP. QTY<br><span class="sep">#</span> <span class="vi">SL Kiểm</span></th>
+        <th style="width:30px"></th>
       </tr>
     </thead>
     <tbody id="product-list-body"></tbody>
+  </table></div>
   </table>
   <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
     <button class="add-product-btn" style="margin-top:0" onclick="addProduct()">＋ <span class="en">Add Product</span><span class="sep"> # </span><span class="vi" style="font-size:11px">Thêm sản phẩm</span></button>
@@ -633,13 +669,15 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 <div class="preview-overlay" id="preview-overlay">
   <div class="preview-toolbar">
     <span id="preview-title-bar">Boka QC Report Preview</span>
-    <div style="display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.12);border-radius:8px;padding:2px;flex-shrink:0">
-      <button onclick="previewZoomOut()" title="Zoom out # Thu nhỏ" style="width:30px;height:30px;border:none;background:transparent;color:#fff;font-size:16px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1">－</button>
-      <span id="preview-zoom-pct" onclick="previewZoomReset()" title="Fit to screen # Vừa màn hình" style="min-width:46px;text-align:center;font-size:12px;cursor:pointer;color:#fff;font-weight:700">100%</span>
-      <button onclick="previewZoomIn()" title="Zoom in # Phóng to" style="width:30px;height:30px;border:none;background:transparent;color:#fff;font-size:16px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1">＋</button>
+    <div class="preview-toolbar-controls">
+      <div style="display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.12);border-radius:8px;padding:2px;flex-shrink:0">
+        <button onclick="previewZoomOut()" title="Zoom out # Thu nhỏ" style="width:28px;height:28px;border:none;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1;flex-shrink:0">－</button>
+        <span id="preview-zoom-pct" onclick="previewZoomReset()" title="Fit to screen # Vừa màn hình" style="min-width:40px;text-align:center;font-size:11px;cursor:pointer;color:#fff;font-weight:700;flex-shrink:0">100%</span>
+        <button onclick="previewZoomIn()" title="Zoom in # Phóng to" style="width:28px;height:28px;border:none;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1;flex-shrink:0">＋</button>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)">🖨 <span class="en">Print</span><span class="sep"> # </span><span class="vi">In</span></button>
+      <button class="btn btn-sm" onclick="closePreview()" style="background:#555;color:#fff;flex-shrink:0">✕ Close</button>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)">🖨 Print # In</button>
-    <button class="btn btn-sm" onclick="closePreview()" style="background:#555;color:#fff">✕ Close</button>
   </div>
   <div class="preview-zoom-scroll" id="preview-zoom-scroll">
     <div class="preview-pages" id="print-pages"></div>
@@ -1071,7 +1109,7 @@ function renderIssueSelector(){
           </div>`;
         }
         return `<div style="display:flex;align-items:center;border-radius:20px;border:2px solid ${active?'#5c4a32':'#c8b89a'};overflow:hidden;background:${active?'#5c4a32':'transparent'}">
-          <span onclick="setActiveIssue('${esc(it.id)}')" style="padding:5px 12px;color:${active?'#fff':'#5c4a32'};font-weight:700;font-size:12px;cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.label)}">${esc(it.label)}</span>
+          <span onclick="setActiveIssue('${esc(it.id)}')" style="padding:5px 12px;color:${active?'#fff':'#5c4a32'};font-weight:700;font-size:12px;cursor:pointer;white-space:normal;word-break:break-word;max-width:100%" title="${esc(it.label)}">${esc(it.label)}</span>
           <label title="Thêm fishbone vào in" style="padding:5px 8px;background:${active?'rgba(255,255,255,.15)':'#f0e8d8'};cursor:pointer;border-left:1px solid ${active?'rgba(255,255,255,.3)':'#c8b89a'};display:flex;align-items:center;gap:3px" onclick="event.stopPropagation()">
             <input type="checkbox" ${it.showFishbone?'checked':''} onchange="issueTypes.find(x=>x.id==='${esc(it.id)}').showFishbone=this.checked" style="margin:0;width:11px;height:11px">
             <span style="font-size:10px;color:${active?'#ffe':'#7a6050'}">🐟</span>
@@ -1451,13 +1489,13 @@ function renderProductList(){
   productList.forEach((p,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td class="num-col">${i+1}</td>
-      <td><input type="text" placeholder="e.g. GLO-001" value="${esc(p.code)}" oninput="productField(${p.id},'code',this.value);refreshProductDropdowns()"></td>
-      <td><input type="text" placeholder="Product name…" value="${esc(p.name)}" oninput="productField(${p.id},'name',this.value);refreshProductDropdowns()"></td>
-      <td><input type="text" placeholder="PI / WO…" value="${esc(p.order||'')}" oninput="productField(${p.id},'order',this.value)"></td>
-      <td><input type="number" min="0" placeholder="0" value="${p.qty||''}" oninput="productField(${p.id},'qty',this.value)"></td>
-      <td style="text-align:center;font-weight:700;color:#2980b9;background:#f0f6ff;font-size:13px">${slides.filter(s=>s.productRef===p.id).reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0)||'—'}</td>
-      <td><button class="plist-del" onclick="removeProduct(${p.id})" title="Remove">✕</button></td>`;
+      <td class="num-col" data-label="#">${i+1}</td>
+      <td data-label="Code / Mã SP"><input type="text" placeholder="e.g. GLO-001" value="${esc(p.code)}" oninput="productField(${p.id},'code',this.value);refreshProductDropdowns()"></td>
+      <td data-label="Name / Tên SP"><input type="text" placeholder="Product name…" value="${esc(p.name)}" oninput="productField(${p.id},'name',this.value);refreshProductDropdowns()"></td>
+      <td data-label="PI/WO / Đơn hàng"><input type="text" placeholder="PI / WO…" value="${esc(p.order||'')}" oninput="productField(${p.id},'order',this.value)"></td>
+      <td data-label="Order Qty / SL ĐH"><input type="number" min="0" placeholder="0" value="${p.qty||''}" oninput="productField(${p.id},'qty',this.value)"></td>
+      <td data-label="Inspected / SL Kiểm" style="text-align:center;font-weight:700;color:#2980b9;background:#f0f6ff;font-size:13px">${slides.filter(s=>s.productRef===p.id).reduce((a,s)=>a+(parseInt(s.qtyInsp)||0),0)||'—'}</td>
+      <td data-label=""><button class="plist-del" onclick="removeProduct(${p.id})" title="Remove">✕</button></td>`;
     tbody.appendChild(tr);
   });
 }
