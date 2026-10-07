@@ -23,8 +23,9 @@
 *{box-sizing:border-box;margin:0;padding:0}
 em{font-weight:400;font-style:italic}
 .en{color:var(--en);font-weight:600;font-style:normal}
-.vi{color:var(--vi);font-weight:400;font-style:italic}
-.sep{color:var(--accent);font-weight:600}
+.vi{color:var(--vi);font-weight:400;font-style:italic;white-space:nowrap}
+.sep{color:var(--accent);font-weight:600;white-space:nowrap}
+.vi-wrap{white-space:normal}
 label em,.card-title em{font-weight:400;font-style:italic;color:var(--vi)}
 body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14px;overflow-x:hidden;max-width:100vw}
 
@@ -218,7 +219,7 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 .resume-btns{display:flex;gap:12px;justify-content:center}
 
 /* ══════ PREVIEW OVERLAY ══════ */
-.preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;overflow-y:auto;padding:0}
+.preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;overflow:auto;padding:0;touch-action:pan-x pan-y}
 .preview-overlay.open{display:flex;flex-direction:column;align-items:center}
 .preview-toolbar{background:#2c2c2c;color:#fff;padding:10px 20px;display:flex;gap:10px;align-items:center;width:100%;position:sticky;top:0;z-index:10}
 .preview-toolbar span{flex:1;font-size:13px;font-family:inherit}
@@ -321,7 +322,7 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 <div class="resume-modal" id="resume-modal" style="display:none">
   <div class="resume-box">
     <div style="font-size:36px;margin-bottom:10px">📂</div>
-    <h2><span class="en">Resume Saved Report?</span><br><span class="vi" style="font-size:14px">Tiếp tục báo cáo đã lưu?</span></h2>
+    <h2><span class="en">Resume Saved Report?</span><br><span class="vi vi-wrap" style="font-size:14px">Tiếp tục báo cáo đã lưu?</span></h2>
     <div class="resume-meta" id="resume-meta"></div>
     <div class="resume-btns">
       <button class="btn btn-primary" onclick="resumeFromState()" style="font-size:14px;padding:10px 22px">📂 <span class="en">Resume</span><span class="sep"> # </span><span class="vi" style="font-size:12px">Tiếp tục</span></button>
@@ -458,7 +459,7 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
     <label class="print-toggle-item"><input type="checkbox" id="ptog-capa" checked onchange="updatePrintToggles()">✅ CAPA</label>
   </div>
   <div style="margin-top:10px;padding:8px 4px;font-size:11px;color:#9a8070;border-top:1px solid #e0d4c0;">
-    <span class="en" style="font-weight:400;color:inherit">For copyright &amp; technical support, please contact —</span> <span class="vi" style="color:inherit">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</span> <a href="mailto:Hieu.tran@boka.ltd" style="color:#5c4a32;text-decoration:none;font-weight:600">Hieu.tran@boka.ltd</a>
+    <span class="en" style="font-weight:400;color:inherit">For copyright &amp; technical support, please contact —</span> <span class="vi vi-wrap" style="color:inherit">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</span> <a href="mailto:Hieu.tran@boka.ltd" style="color:#5c4a32;text-decoration:none;font-weight:600">Hieu.tran@boka.ltd</a>
   </div>
 </div>
 </div>
@@ -518,7 +519,7 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
     <div style="font-size:28px;margin-bottom:10px">⚠️</div>
     <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:8px"><span class="en">File Exists</span><span class="sep"> # </span><span class="vi" style="font-size:12px">File đã tồn tại</span></div>
     <div id="save-conflict-fname" style="font-size:12px;color:#7a6050;background:#fdf9f3;padding:8px 12px;border-radius:6px;margin-bottom:14px;word-break:break-all;border:1px solid #e0d0bc"></div>
-    <div style="font-size:13px;color:#5c4a32;margin-bottom:22px"><span class="en">Overwrite existing file, or create a new report?</span><br><span class="vi" style="font-size:11px">Lưu đè lên file cũ, hay tạo báo cáo mới?</span></div>
+    <div style="font-size:13px;color:#5c4a32;margin-bottom:22px"><span class="en">Overwrite existing file, or create a new report?</span><br><span class="vi vi-wrap" style="font-size:11px">Lưu đè lên file cũ, hay tạo báo cáo mới?</span></div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <button id="save-conflict-overwrite" class="btn btn-primary" style="min-width:100px">💾 <span class="en">Overwrite</span><span class="sep"> # </span><span class="vi" style="font-size:10px">Lưu đè</span></button>
       <button id="save-conflict-new" class="btn" style="min-width:100px;background:#e8f4e8;color:#2d6a2d;border:1px solid #aad4aa;font-family:inherit;cursor:pointer;border-radius:8px;padding:8px 14px;font-size:14px">📄 <span class="en">New</span><span class="sep"> # </span><span class="vi" style="font-size:10px">Báo cáo mới</span></button>
@@ -630,6 +631,11 @@ body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14p
 <div class="preview-overlay" id="preview-overlay">
   <div class="preview-toolbar">
     <span id="preview-title-bar">Boka QC Report Preview</span>
+    <div style="display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.12);border-radius:8px;padding:2px;flex-shrink:0">
+      <button onclick="previewZoomOut()" title="Zoom out # Thu nhỏ" style="width:30px;height:30px;border:none;background:transparent;color:#fff;font-size:16px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1">－</button>
+      <span id="preview-zoom-pct" onclick="previewZoomReset()" title="Fit to screen # Vừa màn hình" style="min-width:46px;text-align:center;font-size:12px;cursor:pointer;color:#fff;font-weight:700">100%</span>
+      <button onclick="previewZoomIn()" title="Zoom in # Phóng to" style="width:30px;height:30px;border:none;background:transparent;color:#fff;font-size:16px;font-weight:700;cursor:pointer;border-radius:6px;line-height:1">＋</button>
+    </div>
     <button class="btn btn-primary btn-sm" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)">🖨 Print # In</button>
     <button class="btn btn-sm" onclick="closePreview()" style="background:#555;color:#fff">✕ Close</button>
   </div>
@@ -868,6 +874,76 @@ async function dbDel(key){
 }
 
 /* ══════════════════════════════════════
+   AUTO-SAVE SAFETY NET (localStorage)
+   Protects against losing an in-progress report to an accidental tab close,
+   browser/device crash, or a mobile webview that silently kills the page —
+   none of which the explicit "💾 Lưu file gốc" button helps with if the user
+   forgot to tap it first. Every meaningful edit schedules a debounced write
+   to localStorage; on next load (if the page wasn't opened from an embedded
+   saved-.html state — that always takes priority) the same Resume dialog
+   used for saved files offers to restore it.
+══════════════════════════════════════ */
+const AUTOSAVE_KEY='boka_autosave_v1';
+const AUTOSAVE_DEBOUNCE_MS=600;
+let _autoSaveTimer=null;
+
+function hasUnsavedWork(){
+  const h=document.getElementById('hdr-product')?.value||document.getElementById('hdr-no')?.value||
+    document.getElementById('hdr-customer')?.value||document.getElementById('hdr-desc')?.value;
+  if(h)return true;
+  if((slides||[]).some(s=>(s.photos||[]).some(p=>p.src)||s.productName||s.date))return true;
+  if(Object.values(issueData||{}).some(d=>
+    Object.values(d.rcState||{}).flat().some(i=>i.checked)||
+    Object.values(d.capaState||{}).some(i=>i.checked)))return true;
+  return false;
+}
+
+function scheduleAutoSave(){
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(()=>{
+    try{
+      if(!hasUnsavedWork()){localStorage.removeItem(AUTOSAVE_KEY);return;}
+      const st=collectState();
+      st.autoSavedAt=Date.now();
+      localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(st));
+    }catch(_){
+      // localStorage unavailable (private mode, quota full, etc.) — convenience net
+      // on top of the explicit Save feature, not a hard requirement — fail silently.
+    }
+  },AUTOSAVE_DEBOUNCE_MS);
+}
+
+function clearAutoSave(){
+  clearTimeout(_autoSaveTimer);
+  try{localStorage.removeItem(AUTOSAVE_KEY);}catch(_){}
+}
+
+function readAutoSave(){
+  try{
+    const raw=localStorage.getItem(AUTOSAVE_KEY);
+    if(!raw)return null;
+    const st=JSON.parse(raw);
+    return (st&&st.v)?st:null;
+  }catch(_){return null;}
+}
+
+// Any form interaction anywhere in the app schedules an auto-save — covers text
+// fields, selects, textareas, checkboxes, radios, date/number inputs and file
+// (photo) inputs across Header/Issue/RC/CAPA without having to instrument every
+// individual mutator function.
+document.addEventListener('input',scheduleAutoSave,true);
+document.addEventListener('change',scheduleAutoSave,true);
+
+// Warn before an accidental reload/close (mis-tap, pull-to-refresh, back gesture)
+// loses in-progress work. Only fires once there's actually something to lose.
+window.addEventListener('beforeunload',(e)=>{
+  if(!hasUnsavedWork())return;
+  e.preventDefault();
+  e.returnValue='';
+  return '';
+});
+
+/* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
 function init(){
@@ -879,6 +955,11 @@ function init(){
       if(st&&st.v){showResumeDialog(st);return;}
     }
   }catch(_){}
+  // No embedded saved-file state (this is the plain, blank app) — check for an
+  // in-progress report the auto-save safety net caught (tab closed, crash, etc.
+  // before a real Save).
+  const autoSaved=readAutoSave();
+  if(autoSaved){showResumeDialog(autoSaved);return;}
   _doInit();
 }
 
@@ -1973,9 +2054,61 @@ function openPreview(){
   document.getElementById('preview-title-bar').textContent=getFileName();
   document.getElementById('preview-overlay').classList.add('open');
   alignInfoTables();
+  previewZoomReset(); // auto-fit the 1050px page to the current screen width
 }
 function closePreview(){document.getElementById('preview-overlay').classList.remove('open');}
 window.addEventListener('beforeprint',alignInfoTables);
+
+/* ══════════════════════════════════════
+   PREVIEW ZOOM (buttons, Ctrl/trackpad-wheel, two-finger pinch)
+   Uses the CSS `zoom` property (not transform:scale) so the scroll area
+   reflows automatically with no manual width/height math — fine here since
+   this app already relies on Chrome/Edge-only APIs (File System Access).
+══════════════════════════════════════ */
+let previewZoom=1;
+const PREVIEW_ZOOM_MIN=0.2,PREVIEW_ZOOM_MAX=2.5;
+
+function applyPreviewZoom(){
+  previewZoom=Math.min(PREVIEW_ZOOM_MAX,Math.max(PREVIEW_ZOOM_MIN,previewZoom));
+  document.getElementById('print-pages').style.zoom=previewZoom;
+  document.getElementById('preview-zoom-pct').textContent=Math.round(previewZoom*100)+'%';
+}
+function previewZoomIn(){previewZoom=Math.round((previewZoom+0.15)*100)/100;applyPreviewZoom();}
+function previewZoomOut(){previewZoom=Math.round((previewZoom-0.15)*100)/100;applyPreviewZoom();}
+function previewZoomReset(){
+  const overlay=document.getElementById('preview-overlay');
+  const availWidth=(overlay.clientWidth||window.innerWidth)-40; // minus preview-pages padding
+  previewZoom=Math.round(Math.min(1,Math.max(PREVIEW_ZOOM_MIN,availWidth/1050))*100)/100;
+  applyPreviewZoom();
+}
+
+// Desktop: Ctrl/Cmd + trackpad-pinch or mouse-wheel → zoom (standard convention)
+document.getElementById('preview-overlay').addEventListener('wheel',(e)=>{
+  if(!e.ctrlKey&&!e.metaKey)return;
+  e.preventDefault();
+  previewZoom+=(e.deltaY<0?1:-1)*0.1;
+  applyPreviewZoom();
+},{passive:false});
+
+// Mobile: two-finger pinch → zoom
+let _pinchStartDist=0,_pinchStartZoom=1;
+document.getElementById('preview-overlay').addEventListener('touchstart',(e)=>{
+  if(e.touches.length===2){
+    _pinchStartDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    _pinchStartZoom=previewZoom;
+  }
+},{passive:true});
+document.getElementById('preview-overlay').addEventListener('touchmove',(e)=>{
+  if(e.touches.length===2&&_pinchStartDist>0){
+    e.preventDefault();
+    const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    previewZoom=_pinchStartZoom*(dist/_pinchStartDist);
+    applyPreviewZoom();
+  }
+},{passive:false});
+document.getElementById('preview-overlay').addEventListener('touchend',(e)=>{
+  if(e.touches.length<2)_pinchStartDist=0;
+},{passive:true});
 
 function buildPages(){
   const date=(document.getElementById('hdr-date').value||todayStr());
@@ -2349,6 +2482,7 @@ async function saveReport(){
 
         // ✅ Show success immediately — before any aux writes that might fail
         toast(`✅ Đã lưu thành công!\n${fname}\n↩ Mở lại trong Chrome để tiếp tục chỉnh sửa`);
+        clearAutoSave(); // data now safely on disk — drop the in-browser draft
 
         // Auxiliary: companion JSON (isolated — never blocks success)
         try{
@@ -2400,6 +2534,7 @@ async function saveReport(){
     a.click();
     setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},3000);
     toast(`✅ Tải về thành công!\n${fname}\n📂 Kiểm tra thư mục Downloads`);
+    clearAutoSave(); // data now safely in a downloaded file — drop the in-browser draft
   }catch(e){
     toast('❌ Không thể lưu file: '+e.message);
   }
@@ -2621,9 +2756,12 @@ function showResumeDialog(st){
   const nSlides=st.slides?.length||0;
   const nRC=Object.values(st.rcState||{}).flat().filter(i=>i.checked).length;
   const nCapa=Object.values(st.capaState||{}).filter(i=>i.checked).length;
+  const savedLine=st.autoSavedAt
+    ?`<span style="color:#9a8070;font-size:12px">💾 Auto-saved # Tự lưu lúc: ${pad(new Date(st.autoSavedAt).getHours())}:${pad(new Date(st.autoSavedAt).getMinutes())} <em style="font-style:italic">(chưa lưu file # not saved to file yet)</em></span>`
+    :`<span style="color:#9a8070;font-size:12px">Saved # Lưu lúc: ${ds}</span>`;
   document.getElementById('resume-meta').innerHTML=
     `<strong>Report No. ${no} — ${product}</strong>`+
-    `<span style="color:#9a8070;font-size:12px">Saved # Lưu lúc: ${ds}</span>`+
+    savedLine+
     `<span style="margin-top:4px;font-size:12px;color:#5c4a32">${nSlides} slide${nSlides!==1?'s':''} · ${nRC} root cause${nRC!==1?'s':''} · ${nCapa} CAPA action${nCapa!==1?'s':''}</span>`;
   document.getElementById('resume-modal').style.display='flex';
 }
@@ -2638,6 +2776,9 @@ function resumeFromState(){
 function startFresh(){
   document.getElementById('resume-modal').style.display='none';
   _pendingState=null;
+  // Only ever relevant when the dialog came from the auto-save safety net (an
+  // embedded saved-file state has nothing to clear here) — harmless no-op otherwise.
+  clearAutoSave();
   _doInit();
 }
 
