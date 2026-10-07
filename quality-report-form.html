@@ -9,17 +9,28 @@
 <style>
 :root{
   --beige:#f5f0e8;--brown:#5c4a32;--accent:#c8a96e;
-  --font:'Courier New',Courier,monospace;
-  --red:#c0392b;--blue:#1a5276;--green:#1a7342;
+  --logo-font:'Courier New',Courier,monospace;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   --border:#c8b89a;--shadow:rgba(92,74,50,.15);
+  --en:#2c1a0e;--vi:#9a8070;
+  --h-en:#5c4a32;--h-vi:#b8a490;
+  --ok:#1a7342;--ok-bg:#e5f3ea;
+  --ng:#c0392b;--ng-bg:#fbe9e7;
+  --na:#8a8478;--na-bg:#eeece7;
+  --crit:#922b21;--maj:#e67e22;--min:#d4ac0d;--obs:#1a5276;
+  --group-bg:#f5ede0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-em{font-weight:600}
-body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px;overflow-x:hidden;max-width:100vw}
+em{font-weight:400;font-style:italic}
+.en{color:var(--en);font-weight:600;font-style:normal}
+.vi{color:var(--vi);font-weight:400;font-style:italic}
+.sep{color:var(--accent);font-weight:600}
+label em,.card-title em{font-weight:400;font-style:italic;color:var(--vi)}
+body{font-family:var(--font);background:var(--beige);color:#2c1a0e;font-size:14px;overflow-x:hidden;max-width:100vw}
 
 /* ── HEADER BAR ── */
 .app-header{background:var(--brown);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
-.logo{font-size:22px;font-weight:900;color:var(--accent);letter-spacing:2px;font-family:var(--font)}
+.logo{font-size:22px;font-weight:900;color:var(--accent);letter-spacing:2px;font-family:var(--logo-font)}
 .app-header .sub{font-size:10px;color:var(--accent);margin-top:2px}
 
 /* ── TABS ── */
@@ -33,15 +44,16 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .tab-panel.active{display:block}
 
 /* ── SECTION CARDS ── */
-.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
-.card-title{font-size:12px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
+.card-title{font-size:15px;font-weight:700;color:var(--h-en);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.card-title .vi{font-size:13px}
 
 /* ── FORM ELEMENTS ── */
 .form-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;align-items:flex-end}
 .form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
 .form-group label{font-size:11px;color:#7a6050;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .form-group input,.form-group select,.form-group textarea{
-  border:1px solid var(--border);border-radius:4px;padding:7px 10px;
+  border:1px solid var(--border);border-radius:8px;padding:7px 10px;
   font-family:inherit;font-size:13px;background:#fdfaf5;
   color:#2c1a0e;outline:none;transition:.2s
 }
@@ -54,14 +66,14 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .sev-group{display:flex;gap:6px;flex-wrap:wrap}
 .sev-btn{padding:6px 14px;border-radius:20px;border:2px solid transparent;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;opacity:.5;text-transform:uppercase}
 .sev-btn.active{opacity:1;transform:scale(1.05)}
-.sev-btn[data-sev="Critical"]{border-color:#922b21;background:#fdedec;color:#922b21}
-.sev-btn[data-sev="Critical"].active{background:#922b21;color:#fff}
-.sev-btn[data-sev="Major"]{border-color:#e67e22;background:#fef5ec;color:#e67e22}
-.sev-btn[data-sev="Major"].active{background:#e67e22;color:#fff}
-.sev-btn[data-sev="Minor"]{border-color:#d4ac0d;background:#fefde7;color:#b7950b}
-.sev-btn[data-sev="Minor"].active{background:#d4ac0d;color:#fff}
-.sev-btn[data-sev="Observation"]{border-color:#1a5276;background:#eaf2ff;color:#1a5276}
-.sev-btn[data-sev="Observation"].active{background:#1a5276;color:#fff}
+.sev-btn[data-sev="Critical"]{border-color:var(--crit);background:#fdedec;color:var(--crit)}
+.sev-btn[data-sev="Critical"].active{background:var(--crit);color:#fff}
+.sev-btn[data-sev="Major"]{border-color:var(--maj);background:#fef5ec;color:var(--maj)}
+.sev-btn[data-sev="Major"].active{background:var(--maj);color:#fff}
+.sev-btn[data-sev="Minor"]{border-color:var(--min);background:#fefde7;color:var(--min)}
+.sev-btn[data-sev="Minor"].active{background:var(--min);color:#fff}
+.sev-btn[data-sev="Observation"]{border-color:var(--obs);background:#eaf2ff;color:var(--obs)}
+.sev-btn[data-sev="Observation"].active{background:var(--obs);color:#fff}
 
 /* ── SLIDE ── */
 .slide-wrapper{border:2px solid var(--border);border-radius:8px;margin-bottom:20px;overflow:hidden;max-width:100%;box-sizing:border-box}
@@ -74,13 +86,13 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .slide-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;box-sizing:border-box;width:100%}
 
 /* ── PHOTO SLOT ── */
-.photo-slot{border:1.5px dashed var(--border);border-radius:6px;display:flex;flex-direction:column;overflow:hidden;background:#fdfaf5;transition:.2s}
+.photo-slot{border:1.5px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;background:#fdfaf5;transition:.2s}
 .photo-slot:hover{border-color:var(--brown)}
 .photo-upload-area{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:default;position:relative;overflow:hidden;background:#f7f2eb}
 @media(max-width:500px){.photo-upload-area{aspect-ratio:5/4}.ph-action-btn{width:76px;font-size:9px;padding:4px 6px}.ph-btn-group{gap:4px}}
 .ph-action-row{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 .ph-btn-group{display:flex;flex-direction:column;gap:5px;align-items:center}
-.ph-action-btn{border:1.5px solid var(--border);border-radius:5px;background:#fff;color:var(--brown);cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;padding:5px 10px;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.3px;transition:.15s;width:88px;position:relative;overflow:hidden}
+.ph-action-btn{border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;padding:5px 10px;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.3px;transition:.15s;width:88px;position:relative;overflow:hidden}
 .ph-action-btn:hover{background:var(--beige);border-color:var(--brown);transform:translateY(-1px)}
 .ph-action-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;font-size:0}
 .ph-action-btn svg{opacity:.75}
@@ -104,19 +116,19 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .photo-upload-area .ph-icon{font-size:30px;color:#c8b89a;pointer-events:none}
 .photo-upload-input{position:fixed;top:-300px;left:-300px;opacity:0;width:1px;height:1px}
 .photo-meta{padding:8px;display:flex;flex-direction:column;gap:6px}
-.photo-meta select,.photo-meta input[type="text"]{border:1px solid var(--border);border-radius:4px;padding:5px 7px;font-family:inherit;font-size:11px;background:#fdfaf5;width:100%}
+.photo-meta select,.photo-meta input[type="text"]{border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;background:#fdfaf5;width:100%}
 .clear-photo-btn{background:none;border:none;color:#999;font-size:10px;cursor:pointer;text-align:right;padding:0 2px}
-.clear-photo-btn:hover{color:var(--red)}
+.clear-photo-btn:hover{color:var(--ng)}
 
 /* ── ADD SLIDE ── */
-.add-slide-btn{display:block;width:100%;padding:12px;border:2px dashed var(--accent);background:transparent;border-radius:6px;color:var(--brown);font-family:inherit;font-size:13px;cursor:pointer;text-align:center;font-weight:700;letter-spacing:.5px;transition:.2s;margin-bottom:8px}
+.add-slide-btn{display:block;width:100%;padding:12px;border:2px dashed var(--accent);background:transparent;border-radius:8px;color:var(--brown);font-family:inherit;font-size:13px;cursor:pointer;text-align:center;font-weight:700;letter-spacing:.5px;transition:.2s;margin-bottom:8px}
 .add-slide-btn:hover{background:rgba(200,169,110,.1);border-color:var(--brown)}
 
 /* ── ROOT CAUSE ── */
-.fishbone-container{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:12px;overflow:hidden}
+.fishbone-container{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:12px;overflow:hidden}
 
 .rc-accordion{display:flex;flex-direction:column;gap:6px}
-.rc-bone{border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.rc-bone{border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .rc-bone-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fdf9f3;cursor:pointer;user-select:none}
 .rc-bone-header:hover{background:#f5ede0}
 .rc-bone-icon{font-size:16px}
@@ -133,7 +145,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .rc-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
 .rc-item-note{margin-left:26px;margin-top:3px;display:none}
 .rc-item-note.show{display:block}
-.rc-item-note input{width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
+.rc-item-note input{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
 
 /* ── CAPA ── */
 .capa-group-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.6px;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px}
@@ -145,9 +157,9 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .capa-item-text .code{color:var(--accent);font-weight:700;font-size:10px;margin-right:4px}
 .capa-item-note{margin-left:26px;margin-top:3px;display:none}
 .capa-item-note.show{display:block}
-.capa-item-note input{width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
+.capa-item-note input{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:11px;background:#fdfaf5}
 /* ── CAPA EXPANDED ── */
-.capa-expanded{margin-left:26px;margin-top:4px;display:none;border:1px solid var(--border);border-radius:4px;padding:8px;background:#fdfaf5;flex-direction:column;gap:6px}
+.capa-expanded{margin-left:26px;margin-top:4px;display:none;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fdfaf5;flex-direction:column;gap:6px}
 .capa-expanded.show{display:flex}
 /* ── CAPA PHOTO GRID ── */
 .capa-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;margin-top:4px}
@@ -160,7 +172,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .capa-photo-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.5);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
 .capa-exp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .capa-exp-label{font-size:10px;color:#7a6050;font-weight:700;text-transform:uppercase;letter-spacing:.4px;min-width:80px;flex-shrink:0}
-.capa-exp-row input[type="text"]{border:1px solid var(--border);border-radius:4px;padding:4px 7px;font-family:inherit;font-size:11px;background:#fff;flex:1;min-width:80px}
+.capa-exp-row input[type="text"]{border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-family:inherit;font-size:11px;background:#fff;flex:1;min-width:80px}
 .capa-date-wrap{display:flex;align-items:center;gap:5px}
 .capa-date-btn{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--brown);background:#fff;position:relative;overflow:hidden;flex:0 0 auto}
 .capa-date-btn:hover{background:var(--beige)}
@@ -171,21 +183,26 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 
 
 /* ── PRINT TOGGLES ── */
-.print-toggle-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
+.print-toggle-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 6px var(--shadow)}
 .print-toggle-title{font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:6px}
 .print-toggles{display:flex;flex-wrap:wrap;gap:8px}
 .print-toggle-item{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:12px;cursor:pointer;user-select:none;transition:.2s}
 .print-toggle-item:has(input:checked){background:var(--brown);color:#fff;border-color:var(--brown)}
 .print-toggle-item input{display:none}
 /* ── ACTION BAR ── */
-.action-bar{position:sticky;bottom:0;background:rgba(245,240,232,.95);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:10px 20px;display:flex;gap:10px;justify-content:flex-end;z-index:100}
-.btn{padding:9px 20px;border-radius:5px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:.2s}
+.action-bar{position:sticky;bottom:0;background:rgba(245,240,232,.95);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;z-index:100}
+@media(max-width:760px){.action-bar{justify-content:center;padding:10px 12px}}
+.btn{padding:9px 20px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:.2s;min-height:44px}
+.btn:active{transform:scale(.98)}
 .btn-primary{background:var(--brown);color:#fff}
 .btn-primary:hover{background:#4a3828}
 .btn-secondary{background:transparent;color:var(--brown);border:2px solid var(--border)}
 .btn-secondary:hover{border-color:var(--brown);background:rgba(92,74,50,.06)}
-.btn-save{background:var(--green);color:#fff}
+.btn-save{background:var(--ok);color:#fff}
 .btn-save:hover{background:#155d38}
+.btn-sm{padding:8px 12px;font-size:12px;min-height:36px}
+.btn-ghost{background:transparent;color:var(--brown);border:none}
+.btn-ghost:hover{background:rgba(92,74,50,.06)}
 
 /* ── TOAST ── */
 #toast{position:fixed;bottom:70px;right:20px;background:var(--brown);color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;z-index:9999;display:none;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:pre-wrap}
@@ -226,9 +243,9 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
 .no-photo{width:100%;aspect-ratio:4/3;background:#eee;display:flex;align-items:center;justify-content:center;font-size:14px;color:#999;border:1px solid #ddd}
-.print-cat{font-size:13px;font-weight:900;color:#1a5276;min-height:2.6em}
+.print-cat{font-size:13px;font-weight:900;color:var(--obs);min-height:2.6em}
 .print-cat em{font-weight:400;font-style:italic;color:#4a7aaa;text-transform:uppercase}
-.print-type{font-size:13px;font-weight:700;color:#c0392b;margin-top:1px;min-height:2.6em}
+.print-type{font-size:13px;font-weight:700;color:var(--ng);margin-top:1px;min-height:2.6em}
 .print-type em{font-weight:400;font-style:italic;color:#c06040}
 .print-caption{font-size:13px;color:#1a1a1a;margin-top:2px;text-align:justify}
 .print-caption em{font-style:italic;color:#7a6050}
@@ -236,7 +253,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .fishbone-print{margin:8px 0;border:1px solid #c0a878;border-radius:4px;overflow:visible;background:#fdfaf5}
 .rc-print-list{margin-top:10px}
 .rc-print-cat{margin-bottom:14px}
-.rc-print-cat-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.rc-print-cat-title{font-size:14px;font-weight:900;text-transform:uppercase;color:var(--obs);letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
 .rc-print-cat-title em{font-style:italic;color:#4a7aaa;font-weight:400}
 .rc-print-item{display:flex;gap:6px;font-size:14px;padding:3px 0}
 .rc-print-code{color:#b8860b;font-weight:900;min-width:58px;flex-shrink:0}
@@ -244,7 +261,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .rc-print-text em{font-style:italic;color:#555}
 .rc-print-note{color:#555;font-style:italic}
 .capa-print-group{margin-bottom:14px}
-.capa-print-group-title{font-size:14px;font-weight:900;text-transform:uppercase;color:#1a5276;letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
+.capa-print-group-title{font-size:14px;font-weight:900;text-transform:uppercase;color:var(--obs);letter-spacing:.4px;border-bottom:1px solid #e0d0b0;padding-bottom:3px;margin-bottom:6px}
 .capa-print-group-title em{font-style:italic;color:#4a7aaa;font-weight:400}
 .capa-print-item{display:flex;gap:6px;font-size:14px;padding:3px 0}
 .capa-print-code{color:#b8860b;font-weight:900;min-width:62px;flex-shrink:0}
@@ -267,8 +284,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .plist-table input{border:none;background:transparent;font-family:inherit;font-size:12px;width:100%;outline:none;color:#2c1a0e;padding:2px 2px}
 .plist-table input:focus{background:#fdf9f3;border-radius:2px}
 .plist-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:1px 5px;transition:.15s}
-.plist-del:hover{color:var(--red)}
-.add-product-btn{margin-top:8px;padding:5px 14px;border:1.5px dashed var(--accent);background:none;border-radius:4px;color:var(--brown);font-family:inherit;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:.3px;transition:.2s}
+.plist-del:hover{color:var(--ng)}
+.add-product-btn{margin-top:8px;padding:5px 14px;border:1.5px dashed var(--accent);background:none;border-radius:8px;color:var(--brown);font-family:inherit;font-size:12px;cursor:pointer;font-weight:700;letter-spacing:.3px;transition:.2s}
 .add-product-btn:hover{background:rgba(200,169,110,.1);border-color:var(--brown)}
 .plist-paste-active{outline:2px dashed #5b8c5a;outline-offset:2px;background:rgba(91,140,90,.04);border-radius:4px}
 /* ── PRODUCT SUMMARY (print) ── */
@@ -277,8 +294,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 .prod-sum-table td{border:1px solid #c0a878;padding:5px 8px;font-size:13px;vertical-align:middle}
 .prod-sum-table tr:nth-child(even) td{background:#fdf9f3}
 .prod-sum-table .num{text-align:center;color:#9a8070;font-size:11px}
-.prod-sum-table .code-cell{font-weight:700;color:#1a5276;white-space:nowrap}
-.prod-sum-table .fail-cell{font-weight:700;color:#c0392b;text-align:center}
+.prod-sum-table .code-cell{font-weight:700;color:var(--obs);white-space:nowrap}
+.prod-sum-table .fail-cell{font-weight:700;color:var(--ng);text-align:center}
 .prod-sum-table .rate-cell{font-weight:700;text-align:center}
 .prod-sum-table .total-row td{background:#f5ede0;font-weight:700;border-top:2px solid #c0a878}
 
@@ -304,11 +321,11 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div class="resume-modal" id="resume-modal" style="display:none">
   <div class="resume-box">
     <div style="font-size:36px;margin-bottom:10px">📂</div>
-    <h2>Resume Saved Report?<br><em style="font-weight:400;font-size:14px;color:#9a8070"># Tiếp tục báo cáo đã lưu?</em></h2>
+    <h2><span class="en">Resume Saved Report?</span><br><span class="vi" style="font-size:14px">Tiếp tục báo cáo đã lưu?</span></h2>
     <div class="resume-meta" id="resume-meta"></div>
     <div class="resume-btns">
-      <button class="btn btn-primary" onclick="resumeFromState()" style="font-size:14px;padding:10px 22px">📂 Resume <em style="font-size:12px;font-weight:400"># Tiếp tục</em></button>
-      <button class="btn btn-secondary" onclick="startFresh()" style="font-size:14px;padding:10px 22px">🆕 New Report <em style="font-size:12px;font-weight:400"># Mới</em></button>
+      <button class="btn btn-primary" onclick="resumeFromState()" style="font-size:14px;padding:10px 22px">📂 <span class="en">Resume</span><span class="sep"> # </span><span class="vi" style="font-size:12px">Tiếp tục</span></button>
+      <button class="btn btn-secondary" onclick="startFresh()" style="font-size:14px;padding:10px 22px">🆕 <span class="en">New Report</span><span class="sep"> # </span><span class="vi" style="font-size:12px">Mới</span></button>
     </div>
   </div>
 </div>
@@ -331,44 +348,44 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <!-- ══ HEADER TAB ══ -->
 <div id="tab-header" class="tab-panel active">
   <div class="card">
-    <div class="card-title">Report Information <em style="font-weight:400;color:#9a8070;font-style:italic"># Thông tin báo cáo</em></div>
+    <div class="card-title"><span class="en">Report Information</span><span class="sep"> # </span><span class="vi">Thông tin báo cáo</span></div>
     <div class="form-row">
       <div class="form-group" style="max-width:165px">
-        <label>Report Date <em># Ngày</em></label>
+        <label><span class="en">Report Date</span><span class="sep"> # </span><span class="vi">Ngày</span></label>
         <input type="date" id="hdr-date">
       </div>
       <div class="form-group" style="max-width:108px">
-        <label>Report No. <em># Số</em></label>
+        <label><span class="en">Report No.</span><span class="sep"> # </span><span class="vi">Số</span></label>
         <input type="text" id="hdr-no" placeholder="001" oninput="this.value=this.value.replace(/[^0-9_]/g,'')">
       </div>
       <div class="form-group" style="flex:11">
-        <label>Product / Item <em># Sản phẩm</em></label>
+        <label><span class="en">Product / Item</span><span class="sep"> # </span><span class="vi">Sản phẩm</span></label>
         <input type="text" id="hdr-product" placeholder="Product name / Item code">
       </div>
       <div class="form-group" style="flex:9">
-        <label>PI / WO <em># Đơn hàng</em></label>
+        <label><span class="en">PI / WO</span><span class="sep"> # </span><span class="vi">Đơn hàng</span></label>
         <input type="text" id="hdr-piwo" placeholder="PI / WO number">
       </div>
       <div class="form-group" style="max-width:120px">
-        <label>Inspected Qty <em># SL Kiểm tra</em></label>
+        <label><span class="en">Inspected Qty</span><span class="sep"> # </span><span class="vi">SL Kiểm tra</span></label>
         <input type="number" id="hdr-qty-insp" placeholder="0" min="0">
       </div>
       <div class="form-group" style="max-width:110px">
-        <label>Defect Qty <em># SL Lỗi</em></label>
+        <label><span class="en">Defect Qty</span><span class="sep"> # </span><span class="vi">SL Lỗi</span></label>
         <input type="number" id="hdr-qty-def" placeholder="0" min="0">
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Customer / Brand <em># Khách hàng</em></label>
+        <label><span class="en">Customer / Brand</span><span class="sep"> # </span><span class="vi">Khách hàng</span></label>
         <input type="text" id="hdr-customer" placeholder="Customer name">
       </div>
       <div class="form-group">
-        <label>Reported By <em># Người báo cáo</em></label>
+        <label><span class="en">Reported By</span><span class="sep"> # </span><span class="vi">Người báo cáo</span></label>
         <input type="text" id="hdr-reporter" placeholder="Name">
       </div>
       <div class="form-group">
-        <label>Department <em># Bộ phận</em></label>
+        <label><span class="en">Department</span><span class="sep"> # </span><span class="vi">Bộ phận</span></label>
         <select id="hdr-dept" onchange="deptSelChange()">
           <option value="">— Select —</option>
           <option value="QA">QA</option>
@@ -385,37 +402,37 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
         </select>
       </div>
       <div class="form-group" id="dept-other-group" style="display:none;max-width:180px">
-        <label>Specify dept <em># Ghi rõ</em></label>
+        <label><span class="en">Specify dept</span><span class="sep"> # </span><span class="vi">Ghi rõ</span></label>
         <input type="text" id="hdr-dept-other" placeholder="Department name…" oninput="deptOtherInput()">
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Description of Issue <em># Mô tả vấn đề</em></label>
+        <label><span class="en">Description of Issue</span><span class="sep"> # </span><span class="vi">Mô tả vấn đề</span></label>
         <textarea id="hdr-desc" rows="3" placeholder="Brief description of the non-conformance # Mô tả ngắn gọn…"></textarea>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Severity <em style="font-weight:400;color:#9a8070;font-style:italic"># Mức độ nghiêm trọng</em></div>
+    <div class="card-title"><span class="en">Severity</span><span class="sep"> # </span><span class="vi">Mức độ nghiêm trọng</span></div>
     <div class="sev-group">
-      <button class="sev-btn" data-sev="Critical" onclick="setSeverity('Critical')">🔴 Critical <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Nghiêm trọng</em></button>
-      <button class="sev-btn" data-sev="Major" onclick="setSeverity('Major')">🟠 Major <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Lớn</em></button>
-      <button class="sev-btn" data-sev="Minor" onclick="setSeverity('Minor')">🟡 Minor <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Nhỏ</em></button>
-      <button class="sev-btn" data-sev="Observation" onclick="setSeverity('Observation')">🔵 Observation <em style="font-weight:400;text-transform:uppercase;font-style:italic"># Quan sát</em></button>
+      <button class="sev-btn" data-sev="Critical" onclick="setSeverity('Critical')">🔴 <span class="en" style="text-transform:uppercase">Critical</span><span class="sep"> # </span><span class="vi" style="text-transform:uppercase">Nghiêm trọng</span></button>
+      <button class="sev-btn" data-sev="Major" onclick="setSeverity('Major')">🟠 <span class="en" style="text-transform:uppercase">Major</span><span class="sep"> # </span><span class="vi" style="text-transform:uppercase">Lớn</span></button>
+      <button class="sev-btn" data-sev="Minor" onclick="setSeverity('Minor')">🟡 <span class="en" style="text-transform:uppercase">Minor</span><span class="sep"> # </span><span class="vi" style="text-transform:uppercase">Nhỏ</span></button>
+      <button class="sev-btn" data-sev="Observation" onclick="setSeverity('Observation')">🔵 <span class="en" style="text-transform:uppercase">Observation</span><span class="sep"> # </span><span class="vi" style="text-transform:uppercase">Quan sát</span></button>
     </div>
   </div>
 
 <!-- ── PRODUCT LIST ── -->
 <div class="card">
-  <div class="card-title">Product List <em style="font-weight:400;color:#9a8070;font-style:italic"># Danh sách sản phẩm</em></div>
+  <div class="card-title"><span class="en">Product List</span><span class="sep"> # </span><span class="vi">Danh sách sản phẩm</span></div>
   <table class="plist-table">
     <thead>
       <tr>
         <th class="num-col">#</th>
-        <th style="width:22%">Product Code <em style="font-weight:400;font-style:italic"># Mã SP</em></th>
-        <th>Product Name <em style="font-weight:400;font-style:italic"># Tên SP</em></th>
-        <th style="width:120px">PI / WO<br><em style="font-weight:400;font-style:italic"># Đơn hàng</em></th>
+        <th style="width:22%"><span class="en">Product Code</span><span class="sep"> # </span><span class="vi">Mã SP</span></th>
+        <th><span class="en">Product Name</span><span class="sep"> # </span><span class="vi">Tên SP</span></th>
+        <th style="width:120px">PI / WO<br><span class="sep">#</span> <span class="vi">Đơn hàng</span></th>
         <th style="width:100px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">ĐƠN HÀNG</em></th>
         <th style="width:90px">SỐ LƯỢNG<br><em style="font-weight:400;font-style:italic">KIỂM</em></th>
         <th style="width:36px"></th>
@@ -424,8 +441,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
     <tbody id="product-list-body"></tbody>
   </table>
   <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
-    <button class="add-product-btn" style="margin-top:0" onclick="addProduct()">＋ Add Product <em style="font-style:italic;font-size:11px"># Thêm sản phẩm</em></button>
-    <button class="add-product-btn" style="margin-top:0;border-color:#5b8c5a;color:#3a5e3a" onclick="document.getElementById('plist-excel-input').click()">📥 Import Excel <em style="font-style:italic;font-size:11px"># Nhập từ Excel</em></button>
+    <button class="add-product-btn" style="margin-top:0" onclick="addProduct()">＋ <span class="en">Add Product</span><span class="sep"> # </span><span class="vi" style="font-size:11px">Thêm sản phẩm</span></button>
+    <button class="add-product-btn" style="margin-top:0;border-color:#5b8c5a;color:#3a5e3a" onclick="document.getElementById('plist-excel-input').click()">📥 <span class="en">Import Excel</span><span class="sep"> # </span><span class="vi" style="font-size:11px">Nhập từ Excel</span></button>
     <input type="file" id="plist-excel-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importProductExcel(this)">
     <span id="plist-paste-hint" style="font-size:11px;color:#aaa;font-style:italic">— hoặc copy từ Excel rồi paste vào bảng</span>
   </div>
@@ -433,7 +450,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 
 <!-- ── PRINT SECTION TOGGLES ── -->
 <div class="print-toggle-card">
-  <div class="print-toggle-title">Print Sections <em style="font-weight:400;color:#9a8070;font-style:italic"># Chọn mục in</em></div>
+  <div class="print-toggle-title"><span class="en">Print Sections</span><span class="sep"> # </span><span class="vi">Chọn mục in</span></div>
   <div class="print-toggles">
     <label class="print-toggle-item"><input type="checkbox" id="ptog-summary" checked onchange="updatePrintToggles()">📋 Cover / Issue</label>
     <label class="print-toggle-item"><input type="checkbox" id="ptog-products" checked onchange="updatePrintToggles()">📦 Product Summary</label>
@@ -441,7 +458,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
     <label class="print-toggle-item"><input type="checkbox" id="ptog-capa" checked onchange="updatePrintToggles()">✅ CAPA</label>
   </div>
   <div style="margin-top:10px;padding:8px 4px;font-size:11px;color:#9a8070;border-top:1px solid #e0d4c0;">
-    For copyright &amp; technical support, please contact — <em style="font-weight:400">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</em> <a href="mailto:Hieu.tran@boka.ltd" style="color:#5c4a32;text-decoration:none;font-weight:600">Hieu.tran@boka.ltd</a>
+    <span class="en" style="font-weight:400;color:inherit">For copyright &amp; technical support, please contact —</span> <span class="vi" style="color:inherit">Bản quyền &amp; hỗ trợ kỹ thuật vui lòng liên hệ:</span> <a href="mailto:Hieu.tran@boka.ltd" style="color:#5c4a32;text-decoration:none;font-weight:600">Hieu.tran@boka.ltd</a>
   </div>
 </div>
 </div>
@@ -449,21 +466,21 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <!-- ══ ISSUE TAB ══ -->
 <div id="tab-issue" class="tab-panel">
   <div id="slides-container"></div>
-  <button class="add-slide-btn" onclick="addSlide()">＋ Add Slide # <em style="font-style:italic;font-size:12px">Thêm trang ảnh</em></button>
+  <button class="add-slide-btn" onclick="addSlide()">＋ <span class="en">Add Slide</span><span class="sep"> # </span><span class="vi">Thêm trang ảnh</span></button>
 </div>
 
 <!-- ══ ROOT CAUSE TAB ══ -->
 <div id="tab-rc" class="tab-panel">
   <div class="card">
-    <div class="card-title">Loại lỗi <em style="font-weight:400;color:#9a8070;font-style:italic"># Defect Issue Type</em></div>
+    <div class="card-title"><span class="en">Defect Issue Type</span><span class="sep"> # </span><span class="vi">Loại lỗi</span></div>
     <div id="rc-issue-selector"></div>
   </div>
   <div class="card">
-    <div class="card-title">Fishbone Diagram — 5M1E <em style="font-weight:400;color:#9a8070;font-style:italic"># Biểu đồ xương cá</em></div>
+    <div class="card-title"><span class="en">Fishbone Diagram — 5M1E</span><span class="sep"> # </span><span class="vi">Biểu đồ xương cá</span></div>
     <div class="fishbone-container" id="fishbone-live"></div>
   </div>
   <div class="card">
-    <div class="card-title">Select Root Causes <em style="font-weight:400;color:#9a8070;font-style:italic"># Chọn nguyên nhân</em></div>
+    <div class="card-title"><span class="en">Select Root Causes</span><span class="sep"> # </span><span class="vi">Chọn nguyên nhân</span></div>
     <div class="rc-accordion" id="rc-accordion"></div>
   </div>
 </div>
@@ -471,15 +488,15 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <!-- ══ CAPA TAB ══ -->
 <div id="tab-capa" class="tab-panel">
   <div class="card">
-    <div class="card-title">Loại lỗi <em style="font-weight:400;color:#9a8070;font-style:italic"># Defect Issue Type</em></div>
+    <div class="card-title"><span class="en">Defect Issue Type</span><span class="sep"> # </span><span class="vi">Loại lỗi</span></div>
     <div id="capa-issue-selector"></div>
   </div>
   <div class="card">
-    <div class="card-title">Corrective &amp; Preventive Actions <em style="font-weight:400;color:#9a8070;font-style:italic"># Hành động khắc phục &amp; phòng ngừa</em></div>
+    <div class="card-title"><span class="en">Corrective &amp; Preventive Actions</span><span class="sep"> # </span><span class="vi">Hành động khắc phục &amp; phòng ngừa</span></div>
     <div id="capa-container"></div>
   </div>
   <div class="card">
-    <div class="card-title">Additional Notes <em style="font-weight:400;color:#9a8070;font-style:italic"># Ghi chú thêm</em></div>
+    <div class="card-title"><span class="en">Additional Notes</span><span class="sep"> # </span><span class="vi">Ghi chú thêm</span></div>
     <textarea id="capa-notes" class="form-group" style="display:block;width:100%" rows="3" placeholder="Responsible person / Timeline / Other notes — Người phụ trách / Thời hạn / Ghi chú khác…"></textarea>
   </div>
 </div>
@@ -499,13 +516,13 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div id="save-conflict-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:10px;padding:28px 32px;width:min(90vw,420px);box-shadow:0 8px 40px rgba(0,0,0,.3);text-align:center">
     <div style="font-size:28px;margin-bottom:10px">⚠️</div>
-    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:8px">File đã tồn tại <em style="font-weight:400;font-size:12px;color:#9a8070"># File exists</em></div>
+    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:8px"><span class="en">File Exists</span><span class="sep"> # </span><span class="vi" style="font-size:12px">File đã tồn tại</span></div>
     <div id="save-conflict-fname" style="font-size:12px;color:#7a6050;background:#fdf9f3;padding:8px 12px;border-radius:6px;margin-bottom:14px;word-break:break-all;border:1px solid #e0d0bc"></div>
-    <div style="font-size:13px;color:#5c4a32;margin-bottom:22px">Lưu đè lên file cũ, hay tạo báo cáo mới?<br><em style="font-size:11px;color:#9a8070"># Overwrite existing file, or create a new report?</em></div>
+    <div style="font-size:13px;color:#5c4a32;margin-bottom:22px"><span class="en">Overwrite existing file, or create a new report?</span><br><span class="vi" style="font-size:11px">Lưu đè lên file cũ, hay tạo báo cáo mới?</span></div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <button id="save-conflict-overwrite" class="btn btn-primary" style="min-width:100px">💾 Lưu đè <em style="font-style:normal;font-size:10px"># Overwrite</em></button>
-      <button id="save-conflict-new" class="btn" style="min-width:100px;background:#e8f4e8;color:#2d6a2d;border:1px solid #aad4aa;font-family:inherit;cursor:pointer;border-radius:4px;padding:8px 14px;font-size:14px">📄 Báo cáo mới <em style="font-style:normal;font-size:10px"># New</em></button>
-      <button id="save-conflict-cancel" class="btn" style="min-width:100px;background:#f5ede0;color:#5c4a32;border:1px solid #c8b48a">✕ Huỷ <em style="font-style:normal;font-size:10px"># Cancel</em></button>
+      <button id="save-conflict-overwrite" class="btn btn-primary" style="min-width:100px">💾 <span class="en">Overwrite</span><span class="sep"> # </span><span class="vi" style="font-size:10px">Lưu đè</span></button>
+      <button id="save-conflict-new" class="btn" style="min-width:100px;background:#e8f4e8;color:#2d6a2d;border:1px solid #aad4aa;font-family:inherit;cursor:pointer;border-radius:8px;padding:8px 14px;font-size:14px">📄 <span class="en">New</span><span class="sep"> # </span><span class="vi" style="font-size:10px">Báo cáo mới</span></button>
+      <button id="save-conflict-cancel" class="btn" style="min-width:100px;background:#f5ede0;color:#5c4a32;border:1px solid #c8b48a">✕ <span class="en">Cancel</span><span class="sep"> # </span><span class="vi" style="font-size:10px">Huỷ</span></button>
     </div>
   </div>
 </div>
@@ -514,7 +531,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div id="new-report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:10px;padding:28px 32px;width:min(90vw,380px);box-shadow:0 8px 40px rgba(0,0,0,.3);text-align:center">
     <div style="font-size:28px;margin-bottom:10px">📄</div>
-    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:10px">Tạo báo cáo mới? <em style="font-weight:400;font-size:12px;color:#9a8070"># New report</em></div>
+    <div style="font-size:15px;font-weight:700;color:#5c4a32;margin-bottom:10px"><span class="en">New Report?</span><span class="sep"> # </span><span class="vi" style="font-size:12px">Tạo báo cáo mới?</span></div>
     <div style="font-size:13px;color:#5c4a32;margin-bottom:6px">Xác nhận tạo báo cáo</div>
     <div id="new-report-no" style="font-size:20px;font-weight:900;color:#3c2a1a;background:#fdf9f3;padding:8px 16px;border-radius:6px;margin-bottom:20px;border:1px solid #e0d0bc;display:inline-block;min-width:80px"></div>
     <div style="display:flex;gap:12px;justify-content:center">
@@ -528,7 +545,7 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:10px;padding:24px;width:min(92vw,520px);box-shadow:0 8px 40px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <span style="font-size:16px;font-weight:900;color:#3c2a1a">⚙️ Settings <em style="font-weight:400;font-size:13px;color:#9a8070"># Cài đặt</em></span>
+      <span style="font-size:16px;font-weight:900;color:#3c2a1a">⚙️ <span class="en">Settings</span><span class="sep"> # </span><span class="vi" style="font-size:13px">Cài đặt</span></span>
       <button onclick="closeSettings()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#777;line-height:1">✕</button>
     </div>
 
@@ -538,37 +555,37 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
         ☁️ Google Apps Script URL <em style="text-transform:none;font-weight:400">(cloud backend)</em>
       </label>
       <input id="settings-script-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"
-        style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
+        style="width:100%;border:1px solid #c8b89a;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
       <div style="font-size:11px;color:#9a8070;margin-top:4px">Dán URL sau khi deploy Apps Script. Lưu vào trình duyệt (localStorage).</div>
     </div>
 
     <!-- Save mode -->
     <div style="margin-bottom:16px">
       <label style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px">
-        💾 Chế độ lưu <em style="text-transform:none;font-weight:400"># Save destination</em>
+        💾 <span class="en">Save Destination</span><span class="sep"> # </span><span class="vi">Chế độ lưu</span>
       </label>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:8px;font-size:13px;flex:1;min-width:120px">
           <input type="radio" name="save-mode" value="both" id="sm-both" style="accent-color:#5c4a32"> Cả hai
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:8px;font-size:13px;flex:1;min-width:120px">
           <input type="radio" name="save-mode" value="cloud" id="sm-cloud" style="accent-color:#5c4a32"> ☁️ Cloud only
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:5px;font-size:13px;flex:1;min-width:120px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1px solid #c8b89a;border-radius:8px;font-size:13px;flex:1;min-width:120px">
           <input type="radio" name="save-mode" value="local" id="sm-local" style="accent-color:#5c4a32"> 💻 Local only
         </label>
       </div>
     </div>
 
     <!-- Local folder -->
-    <div style="margin-bottom:16px;padding:10px 12px;background:#fdfaf5;border:1px solid #e0d4c0;border-radius:5px">
+    <div style="margin-bottom:16px;padding:10px 12px;background:#fdfaf5;border:1px solid #e0d4c0;border-radius:8px">
       <div style="font-size:11px;font-weight:700;color:#7a6050;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
-        📁 Thư mục lưu local <em style="text-transform:none;font-weight:400"># Local save folder</em>
+        📁 <span class="en">Local Save Folder</span><span class="sep"> # </span><span class="vi">Thư mục lưu local</span>
       </div>
       <span id="settings-local-folder" style="font-size:13px;color:#3c2a1a;font-weight:700;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px">(Thư mục sẽ được chọn khi bạn lưu lần đầu)</span>
       <div id="settings-folder-controls" style="display:none;align-items:center;gap:10px">
-        <button onclick="changeLocalFolder()" style="padding:5px 12px;border-radius:4px;border:1px solid #c8b89a;background:#fff;font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap;color:#5c4a32;font-weight:700">📁 Đổi thư mục</button>
-        <button onclick="clearLocalFolder()" title="Xoá thư mục đã nhớ" style="padding:5px 8px;border-radius:4px;border:1px solid #e0b0a0;background:#fff4f2;font-family:inherit;font-size:12px;cursor:pointer;color:#c0392b">✕</button>
+        <button onclick="changeLocalFolder()" style="padding:5px 12px;border-radius:8px;border:1px solid #c8b89a;background:#fff;font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap;color:#5c4a32;font-weight:700">📁 Đổi thư mục</button>
+        <button onclick="clearLocalFolder()" title="Xoá thư mục đã nhớ" style="padding:5px 8px;border-radius:8px;border:1px solid #e0b0a0;background:#fff4f2;font-family:inherit;font-size:12px;cursor:pointer;color:#c0392b">✕</button>
       </div>
       <div style="font-size:11px;color:#9a8070;margin-top:6px">Lưu lần đầu sẽ hỏi vị trí thư mục. Sau đó tự động lưu vào cùng thư mục. Chrome/Edge only.</div>
     </div>
@@ -579,19 +596,19 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
         📖 User Guide URL
       </label>
       <input id="settings-guide-url" type="url" placeholder="Default: quality-report-userguide.html (GitHub Pages)"
-        style="width:100%;border:1px solid #c8b89a;border-radius:4px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
+        style="width:100%;border:1px solid #c8b89a;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fdfaf5;color:#2c1a0e">
       <div style="font-size:11px;color:#9a8070;margin-top:4px">Mặc định: GitHub Pages — quality-report-userguide.html. Điền URL để override (Google Docs, server…).</div>
     </div>
 
     <!-- Email settings -->
-    <div style="margin-bottom:22px;padding:12px;background:#f0f6ff;border:1px solid #b8d0f0;border-radius:5px">
+    <div style="margin-bottom:22px;padding:12px;background:#f0f6ff;border:1px solid #b8d0f0;border-radius:8px">
       <div style="font-size:11px;font-weight:700;color:#2471a3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
-        📧 Email <em style="text-transform:none;font-weight:400"># Cài đặt gửi mail</em>
+        📧 <span class="en">Email Settings</span><span class="sep"> # </span><span class="vi">Cài đặt gửi mail</span>
       </div>
       <div style="margin-bottom:8px">
         <label style="font-size:11px;color:#5a7a9a;font-weight:700;display:block;margin-bottom:4px">Người nhận (To) — cách nhau bằng dấu phẩy</label>
         <input id="settings-email-to" type="text" placeholder="email1@company.com, email2@company.com"
-          style="width:100%;border:1px solid #b8d0f0;border-radius:4px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;color:#2c1a0e;box-sizing:border-box">
+          style="width:100%;border:1px solid #b8d0f0;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;color:#2c1a0e;box-sizing:border-box">
       </div>
       <div>
         <label style="font-size:11px;color:#5a7a9a;font-weight:700;display:block;margin-bottom:4px">
@@ -613,8 +630,8 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <div class="preview-overlay" id="preview-overlay">
   <div class="preview-toolbar">
     <span id="preview-title-bar">Boka QC Report Preview</span>
-    <button class="btn btn-primary" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)" style="padding:6px 14px;font-size:12px">🖨 Print # In</button>
-    <button class="btn" onclick="closePreview()" style="padding:6px 14px;font-size:12px;background:#555;color:#fff">✕ Close</button>
+    <button class="btn btn-primary btn-sm" onclick="const _t=document.title;document.title=getFileName().replace(/\.html$/i,'');window.print();setTimeout(()=>document.title=_t,500)">🖨 Print # In</button>
+    <button class="btn btn-sm" onclick="closePreview()" style="background:#555;color:#fff">✕ Close</button>
   </div>
   <div class="preview-pages" id="print-pages"></div>
 </div>
@@ -622,14 +639,14 @@ body{font-family:sans-serif;background:var(--beige);color:#2c1a0e;font-size:14px
 <!-- ══ REPORTS LIST OVERLAY ══ -->
 <div class="preview-overlay" id="reports-overlay">
   <div class="preview-toolbar">
-    <span id="reports-overlay-title" style="font-weight:700">📋 Danh sách báo cáo <em style="font-weight:400;font-size:12px"># Reports</em></span>
+    <span id="reports-overlay-title" style="font-weight:700">📋 <span class="en" style="font-size:12px">Reports</span><span class="sep"> # </span><span class="vi" style="font-size:12px">Danh sách báo cáo</span></span>
     <div style="display:flex;gap:8px;align-items:center;flex:1;max-width:360px;margin:0 16px">
       <input id="reports-search" type="search" placeholder="🔍 Search… (no, product, customer, date, severity)"
         oninput="filterReports(this.value)"
-        style="flex:1;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:5px 10px;font-family:inherit;font-size:12px;background:rgba(255,255,255,.15);color:#fff;outline:none;min-width:0"
+        style="flex:1;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:5px 10px;font-family:inherit;font-size:12px;background:rgba(255,255,255,.15);color:#fff;outline:none;min-width:0"
         onfocus="this.style.background='rgba(255,255,255,.25)'" onblur="this.style.background='rgba(255,255,255,.15)'">
     </div>
-    <button class="btn" onclick="closeReportsList()" style="padding:6px 14px;font-size:12px;background:#555;color:#fff">✕ Close</button>
+    <button class="btn btn-sm" onclick="closeReportsList()" style="background:#555;color:#fff">✕ Close</button>
   </div>
   <div style="padding:20px;max-width:860px;margin:0 auto">
     <div id="reports-list-body"></div>
@@ -1060,141 +1077,7 @@ function _doInit(){
   renderRCForm();
   renderCapaForm();
   renderFishbone();
-  applyCapaHandoffFromUrl();
 }
-
-// Hand-off from the OCA Tool's "Send to CAPA" button (Checklist screen): it opens this
-// page in a new tab with header fields, a structured `items` list and the Product List as
-// URL query params. Category/Type per defect photo is left for the auditor to pick here
-// (this tool's own taxonomy) — no attempt to auto-map OCA's checklist groups to it. Photos
-// can't fit in a URL, so once slots exist for them this page asks the OCA tab (its
-// `window.opener`) for the actual image data over postMessage — see the listener below.
-let _capaSlotPlan = []; // [{slideId, pi, itemIndex, photoIdx}] — filled once, read by the
-                         // postMessage handler below to know which slot each photo belongs in.
-
-function applyCapaHandoffFromUrl(){
-  let params;
-  try { params = new URLSearchParams(window.location.search); } catch(_) { return; }
-  if (![...params.keys()].length) return;
-
-  const setVal = (id, v) => { if (v) { const el = document.getElementById(id); if (el) el.value = v; } };
-  setVal('hdr-date', params.get('date'));
-  setVal('hdr-product', params.get('product'));
-  setVal('hdr-piwo', params.get('piwo'));
-  setVal('hdr-customer', params.get('customer'));
-  setVal('hdr-reporter', params.get('reporter'));
-  setVal('hdr-qty-insp', params.get('qtyinsp'));
-  setVal('hdr-qty-def', params.get('qtydef'));
-  const desc = params.get('desc');
-  if (desc) setVal('hdr-desc', desc);
-
-  const sev = params.get('severity');
-  if (sev) setSeverity(sev);
-
-  // Product List: carried over as-is from OCA's own Setup screen so it doesn't need
-  // retyping here. Each row also becomes the match target for `sku` below, so a created
-  // slide can link to it (and inherit its Order Qty) instead of using free-text product name.
-  let matchedProductId = null;
-  const productsRaw = params.get('products');
-  const skuParam = params.get('sku') || '';
-  if (productsRaw) {
-    try {
-      const products = JSON.parse(productsRaw);
-      if (Array.isArray(products) && products.length) {
-        products.forEach(p => {
-          const id = productIdCounter++;
-          if (skuParam && p.code === skuParam) matchedProductId = id;
-          productList.push({ id, code: p.code || '', name: p.name || '', order: p.order || '', qty: p.qty || '' });
-        });
-        renderProductList();
-      }
-    } catch(_) {}
-  }
-
-  const itemsRaw = params.get('items');
-  if (itemsRaw) {
-    try {
-      const items = JSON.parse(itemsRaw);
-      if (Array.isArray(items) && items.length) {
-        // One slot per item normally, but an item with more than one photo needs one slot
-        // per photo (each slide only holds 3 slots) — build a flat plan up front so we know
-        // exactly how many slides are needed and which slot maps to which (item, photo).
-        const plan = [];
-        items.forEach((it, i) => {
-          const n = Math.max(1, it.photoCount || 0);
-          for (let p = 0; p < n; p++) plan.push({ itemIndex: i, photoIdx: it.photoCount ? p : null });
-        });
-        while (slides.length * 3 < plan.length) addSlide();
-
-        _capaSlotPlan = [];
-        const slideItemIdx = {}; // slideId -> Set of itemIndex, for this slide's Defect Qty
-        let idx = 0;
-        outer:
-        for (const slide of slides) {
-          for (let pi = 0; pi < slide.slots.length; pi++) {
-            if (idx >= plan.length) break outer;
-            const entry = plan[idx++];
-            const it = items[entry.itemIndex] || {};
-            let caption = `[${it.group || ''}${it.code ? ' - ' + it.code : ''}] ${it.en || ''}${it.vi ? ' / ' + it.vi : ''}${it.note ? ' — ' + it.note : ''}`.trim();
-            if (it.photoCount > 1) caption += ` (${entry.photoIdx + 1}/${it.photoCount})`;
-            slide.slots[pi].caption = caption;
-            _capaSlotPlan.push({ slideId: slide.id, pi, itemIndex: entry.itemIndex, photoIdx: entry.photoIdx });
-            (slideItemIdx[slide.id] = slideItemIdx[slide.id] || new Set()).add(entry.itemIndex);
-          }
-        }
-
-        // Per-slide metadata: same product/date for every slide created here (they're all
-        // from the same carton hand-off); Inspected Qty only goes on the first slide so the
-        // Product List's own auto-summed column doesn't double-count it per slide, while
-        // Defect Qty is the number of distinct items that actually landed on that slide.
-        slides.forEach((slide, si) => {
-          if (!slideItemIdx[slide.id]) return;
-          if (params.get('date')) slide.date = params.get('date');
-          if (matchedProductId) slide.productRef = matchedProductId;
-          else if (params.get('sku')) slide.productName = params.get('sku');
-          slide.qtyDef = String(slideItemIdx[slide.id].size);
-          if (si === 0 && params.get('qtyinsp')) slide.qtyInsp = params.get('qtyinsp');
-        });
-
-        renderSlides();
-        refreshProductDropdowns();
-      }
-    } catch(_) {}
-  }
-
-  // Jump straight to Issue/Photo so the auditor sees the pre-filled captions immediately
-  // instead of landing on the (now redundant) Header tab.
-  const issueBtn = document.querySelector('.tab-btn[data-tab="issue"]');
-  if (issueBtn) switchTab(issueBtn, 'issue');
-
-  toast('📥 Đã nhận dữ liệu từ OCA Tool — chọn Category/Type cho từng ảnh lỗi.\nReceived data from OCA Tool — pick Category/Type for each defect photo.');
-
-  // Tell the OCA tab (if this was opened from it) we're ready to receive photo data — it
-  // can't be included in the URL, so it waits for this signal before posting it across.
-  if (_capaSlotPlan.some(s => s.photoIdx !== null) && window.opener) {
-    try { window.opener.postMessage({ type: 'oca-capa-ready' }, '*'); } catch(_) {}
-  }
-}
-
-// Receives the actual photo data the OCA tab couldn't fit in the URL, once it answers our
-// "oca-capa-ready" ping above. `photos` is { itemIndex: [dataUrl, ...] }, aligned with the
-// `items` list from the URL — _capaSlotPlan says which slot each (item, photo) pair landed in.
-window.addEventListener('message', (ev) => {
-  const d = ev.data;
-  if (!d || d.type !== 'oca-capa-photos' || !d.photos) return;
-  let changed = false;
-  _capaSlotPlan.forEach(ref => {
-    if (ref.photoIdx === null) return;
-    const arr = d.photos[ref.itemIndex];
-    const src = arr && arr[ref.photoIdx];
-    if (!src) return;
-    const slide = slides.find(s => s.id === ref.slideId);
-    if (!slide || !slide.slots[ref.pi]) return;
-    slide.slots[ref.pi].src = src;
-    changed = true;
-  });
-  if (changed) renderSlides();
-});
 
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function maskDate(v){const d=v.replace(/\D/g,'').slice(0,6);if(d.length>4)return d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4);if(d.length>2)return d.slice(0,2)+'-'+d.slice(2);return d;}
@@ -1294,7 +1177,7 @@ function renderSlides(){
     d.className='slide-wrapper';d.id='slide-'+slide.id;
     d.innerHTML=`
       <div class="slide-header">
-        <span>📸 SLIDE ${si+1} # <em style="font-style:italic;font-weight:400">TRANG ẢNH ${si+1}</em></span>
+        <span>📸 ${bi('SLIDE '+(si+1),'TRANG ẢNH '+(si+1))}</span>
         ${slides.length>1?`<button class="slide-remove-btn" onclick="removeSlide(${slide.id})">✕ Remove</button>`:''}
       </div>
       ${buildSlideMeta(slide)}
@@ -1331,6 +1214,7 @@ const emptyArea=`<div class="ph-action-row"><div class="ph-btn-group"><label cla
 }
 
 function esc(s){return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function bi(en,vi){return `<span class="en">${en}</span><span class="sep"> # </span><span class="vi">${vi}</span>`;}
 
 /* Bilingual display helpers */
 function sentCase(s){if(!s)return '';return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();}
@@ -1342,7 +1226,7 @@ function catDisplay(cat,html){
   const viRaw=slashIdx>=0?cat.slice(slashIdx+3).trim():'';
   const vi=viRaw.replace(/\s*\([A-Z]+\)\s*$/,'').trim();
   if(!vi)return en;
-  if(html)return `${en} <em># ${vi}</em>`;
+  if(html)return bi(en,vi);
   return `${en} # ${vi}`;
 }
 // Type value: "EN text — VI text" → both sentence case
@@ -1353,7 +1237,7 @@ function typeDisplay(val,html){
   const en=sentCase(val.slice(0,idx));
   const vi=sentCase(val.slice(idx+3));
   if(!vi)return en;
-  if(html)return `${en} <em># ${vi}</em>`;
+  if(html)return bi(en,vi);
   return `${en} # ${vi}`;
 }
 
@@ -1672,13 +1556,13 @@ function refreshProductDropdowns(){
 
 function buildSlideMeta(slide){
   const wcOtherField = slide.wc==='Other'
-    ? `<div class="form-group" style="min-width:150px"><label>Other (specify) <em># Ghi rõ</em></label><input type="text" value="${esc(slide.wcOther)}" oninput="slideField(${slide.id},'wcOther',this.value)" placeholder="Work center name…"></div>`
+    ? `<div class="form-group" style="min-width:150px"><label>${bi('Other (specify)','Ghi rõ')}</label><input type="text" value="${esc(slide.wcOther)}" oninput="slideField(${slide.id},'wcOther',this.value)" placeholder="Work center name…"></div>`
     : '';
   const manualStyle=(!slide.productRef)?'':'display:none';
   const LB='white-space:nowrap;display:block;font-size:9px';
   return `<div class="slide-meta" style="flex-wrap:nowrap;gap:8px;align-items:flex-end;overflow-x:auto">
     <div class="form-group" style="flex:0 0 auto;width:165px">
-      <label style="${LB}">Work Center / Stage <em># Công đoạn</em></label>
+      <label style="${LB}">${bi('Work Center / Stage','Công đoạn')}</label>
       <select style="width:165px;font-size:12px" onchange="slideSetWC(${slide.id},this.value)">
         <option value="">-- Select # Chọn --</option>
         ${WC_STAGES.map(w=>`<option value="${w}"${slide.wc===w?' selected':''}>${w}</option>`).join('')}
@@ -1686,11 +1570,11 @@ function buildSlideMeta(slide){
     </div>
     ${wcOtherField}
     <div class="form-group" style="flex:0 0 auto;width:130px;margin-left:23px">
-      <label style="${LB}">Issue Date <em># Ngày phát sinh</em></label>
+      <label style="${LB}">${bi('Issue Date','Ngày phát sinh')}</label>
       <input type="date" style="width:130px;font-size:12px" value="${slide.date}" onchange="slideField(${slide.id},'date',this.value)">
     </div>
     <div class="form-group" style="flex:0 0 auto;width:265px;margin-left:8px">
-      <label style="${LB}">Product <em># Sản phẩm</em></label>
+      <label style="${LB}">${bi('Product','Sản phẩm')}</label>
       <select class="product-sel" style="width:265px;font-size:12px;margin-bottom:4px${productList.some(p=>p.code||p.name)?'':';display:none'}" onchange="slideSetProduct(${slide.id},this.value)">${getProductOptions(slide.productRef)}</select>
       <div class="product-manual-wrap" style="${manualStyle}">
         <input type="text" style="width:265px;font-size:12px" placeholder="Product name…" value="${esc(slide.productRef?'':slide.productName||'')}" oninput="slideField(${slide.id},'productName',this.value)">
@@ -1701,22 +1585,22 @@ function buildSlideMeta(slide){
         const lp=productList.find(p=>p.id===slide.productRef);
         const oq=lp?(lp.qty||'—'):'—';
         return `<div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px">
-          <label style="${LB}">Order Qty <em># SL ĐH</em></label>
+          <label style="${LB}">${bi('Order Qty','SL ĐH')}</label>
           <input type="number" style="width:100px;font-size:12px;background:#f0f6ff;color:#1a5276;font-weight:700" min="0" placeholder="Auto" value="${oq==='—'?'':oq}" readonly title="Lấy từ bảng sản phẩm">
         </div>`;
       } else {
         return `<div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px">
-          <label style="${LB}">Order Qty <em># SL ĐH</em></label>
+          <label style="${LB}">${bi('Order Qty','SL ĐH')}</label>
           <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.orderQty||''}" oninput="slideField(${slide.id},'orderQty',this.value,this)">
         </div>`;
       }
     })()}
     <div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:2px">
-      <label style="${LB}">Inspected <em># SL Kiểm</em></label>
+      <label style="${LB}">${bi('Inspected','SL Kiểm')}</label>
       <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.qtyInsp||''}" oninput="slideField(${slide.id},'qtyInsp',this.value,this)">
     </div>
     <div class="form-group" style="flex:0 0 auto;width:100px;min-width:100px;margin-left:12px;margin-right:20px">
-      <label style="${LB}">Defect <em># SL Lỗi</em></label>
+      <label style="${LB}">${bi('Defect','SL Lỗi')}</label>
       <input type="number" style="width:100px;font-size:12px" min="0" placeholder="0" value="${slide.qtyDef||''}" oninput="slideField(${slide.id},'qtyDef',this.value,this)">
     </div>
   </div>`;
@@ -1742,7 +1626,7 @@ function renderRCForm(){
     div.innerHTML=`
       <div class="rc-bone-header" onclick="toggleBone('rcb-${key}',this)">
         <span class="rc-bone-icon">${bone.icon}</span>
-        <span class="rc-bone-label">${bone.label_en} <em style="font-weight:400;letter-spacing:0;font-style:italic"># ${bone.label_vi}</em></span>
+        <span class="rc-bone-label">${bi(bone.label_en,bone.label_vi)}</span>
         ${cnt>0?`<span class="rc-bone-count">${cnt} ✓</span>`:''}
         <span class="rc-bone-chevron">▼</span>
       </div>
@@ -1752,7 +1636,7 @@ function renderRCForm(){
           return `<div class="rc-item">
             <div class="rc-item-row">
               <input type="checkbox" class="rc-item-check" id="rci-${key}-${i}" ${st.checked?'checked':''} onchange="rcToggle('${key}',${i},this.checked)">
-              <label class="rc-item-text" for="rci-${key}-${i}"><span class="code">[${it.code}]</span>${it.en} # <em>${it.vi}</em></label>
+              <label class="rc-item-text" for="rci-${key}-${i}"><span class="code">[${it.code}]</span>${bi(it.en,it.vi)}</label>
             </div>
             <div class="rc-item-note${st.checked?' show':''}" id="rcn-${key}-${i}">
               <input type="text" placeholder="Note # Ghi chú…" value="${esc(st.note)}" oninput="rcState['${key}'][${i}].note=this.value">
@@ -1765,7 +1649,7 @@ function renderRCForm(){
   // Custom free-text RC field
   const customDiv=document.createElement('div');
   customDiv.style.cssText='margin-top:10px;padding:10px 0 2px;border-top:1px dashed var(--border)';
-  customDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Other # <em style="font-style:italic">Khác</em> <em style="font-weight:400;color:#9a8070">— not in list above # không có trong danh sách</em></div><textarea style="width:100%;border:1px solid var(--border);border-radius:4px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional root cause… # Mô tả nguyên nhân bổ sung…" oninput="rcCustom=this.value">${esc(rcCustom)}</textarea>`;
+  customDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${bi('Other','Khác')} <span class="sep">—</span> ${bi('not in list above','không có trong danh sách')}</div><textarea style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional root cause… # Mô tả nguyên nhân bổ sung…" oninput="rcCustom=this.value">${esc(rcCustom)}</textarea>`;
   acc.appendChild(customDiv);
 }
 
@@ -1932,13 +1816,13 @@ function renderCapaForm(){
   CAPA_GROUPS.forEach(g=>{
     const d=document.createElement('div');
     d.style.marginBottom='12px';
-    d.innerHTML=`<div class="capa-group-title">${g.title} <em style="font-weight:400;color:#9a8070;font-style:italic"># ${g.title_vi}</em></div>`+
+    d.innerHTML=`<div class="capa-group-title">${bi(g.title,g.title_vi)}</div>`+
     g.items.map(it=>{
       const st=capaState[it.code]||{};
       return `<div class="capa-item">
         <div class="capa-item-row">
           <input type="checkbox" class="capa-item-check" id="cap-${it.code}" ${st.checked?'checked':''} onchange="capaToggle('${it.code}',this.checked)">
-          <label class="capa-item-text" for="cap-${it.code}"><span class="code">[${it.code}]</span>${it.en} # <em>${it.vi}</em></label>
+          <label class="capa-item-text" for="cap-${it.code}"><span class="code">[${it.code}]</span>${bi(it.en,it.vi)}</label>
         </div>
         <div class="capa-expanded${st.checked?' show':''}" id="capn-${it.code}">
           <div class="capa-exp-row">
@@ -1978,8 +1862,8 @@ function renderCapaForm(){
   // Custom free-text CAPA field
   const customCapaDiv=document.createElement('div');
   customCapaDiv.style.cssText='margin-top:10px;padding:10px 0 2px;border-top:1px dashed var(--border)';
-  customCapaDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Other Action # <em style="font-style:italic">Hành động khác</em> <em style="font-weight:400;color:#9a8070">— not in list above # không có trong danh sách</em></div>
-<textarea style="width:100%;border:1px solid var(--border);border-radius:4px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional corrective action… # Mô tả hành động bổ sung…" oninput="capaCustom=this.value">${esc(capaCustom)}</textarea>
+  customCapaDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${bi('Other Action','Hành động khác')} <span class="sep">—</span> ${bi('not in list above','không có trong danh sách')}</div>
+<textarea style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;background:#fdfaf5;resize:vertical;min-height:52px;color:#2c1a0e" placeholder="Describe additional corrective action… # Mô tả hành động bổ sung…" oninput="capaCustom=this.value">${esc(capaCustom)}</textarea>
 <div class="capa-expanded show" style="margin-left:0;margin-top:8px">
   <div class="capa-exp-row">
     <span class="capa-exp-label">Note # Ghi chú</span>
@@ -2139,7 +2023,7 @@ function buildPages(){
       // Cap total defective at order qty (1 unit can have multiple defect types)
       const failQty=totalQty>0?Math.min(rawFailQty,totalQty):rawFailQty;
       const rate=totalQty>0?(failQty/totalQty*100).toFixed(1)+'%':'—';
-      const rateColor=totalQty>0?(failQty/totalQty>0.1?'#c0392b':failQty>0?'#e67e22':'#1a7342'):'#555';
+      const rateColor=totalQty>0?(failQty/totalQty>0.1?'var(--ng)':failQty>0?'var(--maj)':'var(--ok)'):'#555';
       return {p,inspQty,failQty,totalQty,rate,rateColor};
     });
     const grandTotal=rows.reduce((a,r)=>a+(r.totalQty||0),0);
@@ -2178,7 +2062,7 @@ function buildPages(){
             <td style="text-align:center">${grandTotal||'—'}</td>
             <td style="text-align:center">${grandInsp||'—'}</td>
             <td class="fail-cell">${grandInsp?grandFail:'—'}</td>
-            <td class="rate-cell" style="color:${grandInsp>0&&grandTotal>0?(grandFail/grandTotal>0.1?'#c0392b':grandFail>0?'#e67e22':'#1a7342'):'#555'}">${grandRate}</td>
+            <td class="rate-cell" style="color:${grandInsp>0&&grandTotal>0?(grandFail/grandTotal>0.1?'var(--ng)':grandFail>0?'var(--maj)':'var(--ok)'):'#555'}">${grandRate}</td>
           </tr>
         </tbody>
       </table>
@@ -2225,7 +2109,7 @@ function buildPages(){
           <div style="flex:10;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${oqLabel}</div>
           <div style="flex:12;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${slide.qtyInsp||'—'} pcs</div>
           <div style="flex:10;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;color:#c0392b;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0">${slide.qtyDef||'—'} pcs</div>
-          <div style="flex:8;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0;color:${slideOrderQty>0&&slideDefQty>0?(slideDefQty/slideOrderQty>0.1?'#c0392b':slideDefQty/slideOrderQty>0?'#e67e22':'#1a7342'):'#555'}">${defectRate}</div>
+          <div style="flex:8;padding:3px 5px;background:#fff;font-size:10px;font-weight:700;text-transform:uppercase;border-left:1px solid #c8b48a;min-width:0;color:${slideOrderQty>0&&slideDefQty>0?(slideDefQty/slideOrderQty>0.1?'var(--ng)':slideDefQty/slideOrderQty>0?'var(--maj)':'var(--ok)'):'#555'}">${defectRate}</div>
         </div>
       </div>
       <div class="photos-grid">
@@ -2547,9 +2431,9 @@ body{font-family:sans-serif;background:#d8cfc0;margin:0;padding:20px}
 .photo-print{display:flex;flex-direction:column;gap:4px}
 .photo-print img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #c0a878}
 .no-photo{width:100%;aspect-ratio:4/3;background:#eee;display:flex;align-items:center;justify-content:center;font-size:14px;color:#999;border:1px solid #ddd}
-.print-cat{font-size:13px;font-weight:900;color:#1a5276;min-height:2.6em}
+.print-cat{font-size:13px;font-weight:900;color:var(--obs);min-height:2.6em}
 .print-cat em{font-weight:400;font-style:italic;color:#4a7aaa;text-transform:uppercase}
-.print-type{font-size:13px;font-weight:700;color:#c0392b;margin-top:1px;min-height:2.6em}
+.print-type{font-size:13px;font-weight:700;color:var(--ng);margin-top:1px;min-height:2.6em}
 .print-type em{font-weight:400;font-style:italic;color:#c06040}
 .print-caption{font-size:13px;color:#1a1a1a;margin-top:2px;text-align:justify}
 .rc-print-title,.capa-print-title{font-size:18px;font-weight:900;color:#3c2a1a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px}
@@ -2576,8 +2460,8 @@ body{font-family:sans-serif;background:#d8cfc0;margin:0;padding:20px}
 .prod-sum-table td{border:1px solid #c0a878;padding:5px 8px;font-size:13px;vertical-align:middle}
 .prod-sum-table tr:nth-child(even) td{background:#fdf9f3}
 .prod-sum-table .num{text-align:center;color:#9a8070;font-size:11px}
-.prod-sum-table .code-cell{font-weight:700;color:#1a5276;white-space:nowrap}
-.prod-sum-table .fail-cell{font-weight:700;color:#c0392b;text-align:center}
+.prod-sum-table .code-cell{font-weight:700;color:var(--obs);white-space:nowrap}
+.prod-sum-table .fail-cell{font-weight:700;color:var(--ng);text-align:center}
 .prod-sum-table .rate-cell{font-weight:700;text-align:center}
 .prod-sum-table .total-row td{background:#f5ede0;font-weight:700;border-top:2px solid #c0a878}
 @page{size:297mm 210mm;margin:10mm 12mm;}
@@ -2904,7 +2788,7 @@ async function openReportsList(){
   _allReports=[];
   document.getElementById('reports-overlay').classList.add('open');
   document.getElementById('reports-search').value='';
-  document.getElementById('reports-overlay-title').innerHTML='📋 Danh sách báo cáo <em style="font-weight:400;font-size:12px"># Reports</em>';
+  document.getElementById('reports-overlay-title').innerHTML='📋 '+bi('Reports','Danh sách báo cáo');
   document.getElementById('reports-list-body').innerHTML=
     '<div style="color:#888;padding:32px;text-align:center">Đang tải… # Loading…</div>';
   try{
@@ -2939,15 +2823,15 @@ function renderReportsList(reports){
     body.innerHTML='<div style="color:#888;padding:48px;text-align:center;font-style:italic">Chưa có báo cáo nào được lưu.</div>';
     return;
   }
-  const SEV_COLOR={Critical:'#c0392b',Major:'#e67e22',Minor:'#b8a000',Observation:'#2980b9'};
+  const SEV_COLOR={Critical:'var(--crit)',Major:'var(--maj)',Minor:'var(--min)',Observation:'var(--obs)'};
   const rows=reports.map(r=>{
     const isLocal=r.source==='local';
     const openBtn=isLocal
-      ?`<button class="btn btn-primary" onclick="loadLocalReport('${esc(r.jsonfile)}')" style="padding:5px 12px;font-size:12px">📂 Mở</button>`
-      :`<button class="btn btn-primary" onclick="loadCloudReport('${esc(r.id)}')" style="padding:5px 12px;font-size:12px">📂 Mở</button>`;
+      ?`<button class="btn btn-primary btn-sm" onclick="loadLocalReport('${esc(r.jsonfile)}')">📂 Mở</button>`
+      :`<button class="btn btn-primary btn-sm" onclick="loadCloudReport('${esc(r.id)}')">📂 Mở</button>`;
     const delBtn=isLocal
-      ?`<button class="btn" onclick="deleteLocalReport('${esc(r.htmlfile)}','${esc(r.jsonfile)}',this)" style="padding:5px 10px;font-size:12px;background:#c0392b;color:#fff;border:none">🗑</button>`
-      :`<button class="btn" onclick="deleteCloudReport('${esc(r.id)}',this)" style="padding:5px 10px;font-size:12px;background:#c0392b;color:#fff;border:none">🗑</button>`;
+      ?`<button class="btn btn-sm" onclick="deleteLocalReport('${esc(r.htmlfile)}','${esc(r.jsonfile)}',this)" style="background:var(--ng);color:#fff;border:none">🗑</button>`
+      :`<button class="btn btn-sm" onclick="deleteCloudReport('${esc(r.id)}',this)" style="background:var(--ng);color:#fff;border:none">🗑</button>`;
     return `
     <div style="background:#fff;border:1px solid #e0d4c0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:14px">
       <div style="flex:0 0 54px;text-align:center;border-right:1px solid #e0d4c0;padding-right:14px">
@@ -3044,7 +2928,7 @@ async function openLocalHistory(){
   _allReports=[];
   document.getElementById('reports-overlay').classList.add('open');
   document.getElementById('reports-search').value='';
-  document.getElementById('reports-overlay-title').innerHTML='📂 Lịch sử báo cáo local <em style="font-weight:400;font-size:12px"># Local History</em>';
+  document.getElementById('reports-overlay-title').innerHTML='📂 '+bi('Local History','Lịch sử báo cáo local');
   document.getElementById('reports-list-body').innerHTML=
     '<div style="color:#888;padding:32px;text-align:center">Đang đọc thư mục… # Loading…</div>';
   try{
